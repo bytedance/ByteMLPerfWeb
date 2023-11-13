@@ -1,6 +1,6 @@
 # full override: we're not tracking changes to the docsy base file.
 
-baseURL = "https://bytedance.github.io/ByteMLPerf"
+baseURL = "https://bytedance.github.io/ByteMLPerfWeb"
 relativeURLS = true
 canonifyurls = true
 title = "ByteMLPerf"
