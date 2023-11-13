@@ -1,0 +1,22 @@
+---
+title: "ByteMLPerf to Present at Open Source Summit Shanghai"
+date: 2023-09-20
+weight: 2
+keywords: ["ByteMLPerf", "Open Source Summit"]
+description: "We will be participating in the upcoming Open Source Summit in Shanghai"
+---
+
+ByteMLPerf will be participating in the upcoming Open Source Summit in Shanghai. The team will be presenting a special talk, giving insights into the latest advancements and sharing their journey.
+
+The title of the talk, "Consolidation in Benchmarking, Optimization, and Ecosystem Collaboration for AI ASICs" speaks to the collaborative spirit of the open-source community. ByteMLPerf aims to bridge gaps, drive innovations, and foster understanding through this session.
+
+The Open Source Summit, one of the biggest events dedicated to open-source technologies in Asia, is expected to witness participation from tech giants, innovators, and enthusiasts from across the globe. ByteMLPerf’s inclusion is a testament to the significance and impact of their work in the field of machine learning.
+
+We invite all attendees and those interested in machine learning benchmarks to join ByteMLPerf's session. Let's come together, share, learn, and pave the way for the future of open-source machine learning.
+
+For more details about the schedule and the summit, please see the poster below.
+
+
+<div align="center">
+  <img src="/img/blog/open_source_summit/1.jpg" width="700">
+</div>

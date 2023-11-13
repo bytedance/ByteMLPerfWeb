@@ -1,0 +1,672 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+{{ $col_id := .Get "color" | default .Ordinal }}
+{{ $height := .Get "height" | default "auto"  }}
+{{ $type   := .Get "type" | default "" }}
+{{ $_class  := .Get "class" | default "" }}
+{{ $info_source := .Get "info" | default "custom" }}
+{{ $icon := .Get "icon" | default "fa-lightbulb" -}}
+{{ $lang := .Site.Language.Lang }}
+{{ $how_it_works_href := .Site.Data.overview.how_it_work_href }}
+{{ $feature := (cond (eq $lang "en") .Site.Data.overview.features_en .Site.Data.overview.features)}}
+{{ $keywords := (cond (eq $lang "en") .Site.Data.overview.keywords_en .Site.Data.overview.keywords)}}
+<a id="td-block-{{ .Ordinal }}" class="td-offset-anchor"></a>
+<section class="row td-box td-box--{{ $col_id }} td-box--gradient td-box--height-{{ $height }} {{ $_class }}">
+	<div class="col">
+		<div class="row {{ $type }}">
+			{{ if eq $info_source "feature" }}
+				{{ range $feature }}
+				<div class="col-lg-4 mb-5 mb-lg-0 text-center">
+					<div class="mb-4 h1">
+						<i class="{{ if not (or (hasPrefix $icon "fas ") (hasPrefix $icon "fab ")) }}fas {{ end }}{{ $icon }}"></i>
+					</div>
+					<h4 class="h3">
+						{{ .feature }}
+					</h4>
+					<p class="mb-0">
+						{{ .feature_desc }}
+					</p>
+				</div>
+				{{ end }}
+			{{ else if eq $info_source "work"}}
+                <h2 class="home-section-title">{{ i18n "benchmark_summary" }}</h2>
+                <div class="row echarts-center">
+                    <div id="echarts-container" style="width: 100%; height:600px;"></div>
+                </div>
+            {{ else if eq $info_source "hardware_comparison"}}
+                <h2 class="home-section-title">{{ i18n "hardware_comparison" }}</h2>
+                <div class="container">
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-auto">
+                            <!-- Bootstrap下拉菜单供用户选择GPU -->
+                            <select class="form-select" id="gpuSelect1">
+                                <option selected>Select Hardware 1</option>
+                            </select>
+                        </div>
+                        <div class="col-auto align-self-center">
+                            VS
+                        </div>
+                        <div class="col-auto">
+                            <select class="form-select" id="gpuSelect2">
+                                <option selected>Select Hardware 2</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <!-- Bootstrap按钮 -->
+                            <button class="btn btn-primary" onclick="compareGPUs()">Compare</button>
+                        </div>
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <!-- 左侧表格 -->
+                            <table class="table table-hover table-bordered" id="comparisonTable"  style="display:none;">
+                                <!-- 表头和内容将由JavaScript动态生成 -->
+                                <thead>
+                                    <!-- 动态生成表头 -->
+                                </thead>
+                                <tbody>
+                                    <!-- 内容将由JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- 右侧 ECharts 柱状图 -->
+                            <div id="echartContainer" style="width: 100%; height: 500px;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            {{ else if eq $info_source "hardware_info"}}
+                <h2 class="home-section-title">{{ i18n "hardware_info" }}</h2>
+                <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document" >
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-center">Image Preview</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <img src="" id="modalImage" alt="Image Preview" width="100%" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row table-center">
+                    <table id="myTable" class="table table-bordered table-hover order-column">
+                        <thead>
+                            <tr>
+                              <th colspan="4">SKU</th>
+                              <th colspan="4">Board Design</th>
+                              <th colspan="10">Memory Specifications</th>
+                              <th colspan="16">Computing Performance Specifications</th>
+                              <th colspan="5">Networking Parameters</th>
+                            </tr>
+                            <tr>
+                              <th rowspan="2">Vendor</th>
+                              <th rowspan="2">Name</th>
+                              <th rowspan="2">Purpose</th>
+                              <th rowspan="2">Picture</th>
+                              <th rowspan="2">Process Size(NM)</th>
+                              <th rowspan="2">Board Size</th>
+                              <th rowspan="2">Bus Interface</th>
+                              <th rowspan="2">TDP(W)</th>
+                              <th rowspan="2">Memory Hierarchy Graph</th>
+                              <th rowspan="1" colspan="3">Memory</th>
+                              <th rowspan="1" colspan="3">一级缓存</th>
+                              <th rowspan="1" colspan="3">二级缓存</th>
+                              <th rowspan="2">PE层次架构图</th>
+                              <th rowspan="1" colspan="3">PE</th>
+                              <th rowspan="1" colspan="4">Scalar Parameters</th>
+                              <th rowspan="1" colspan="4">Vector Parameters</th>
+                              <th rowspan="1" colspan="4">Tensor Parameters</th>
+                              <th rowspan="2">通信方式</th>
+                              <th rowspan="2">端口数量</th>
+                              <th rowspan="2">RDMA协议</th>
+                              <th rowspan="2">下行带宽</th>
+                              <th rowspan="2">上行带宽</th>
+                            </tr>
+                            <tr>
+                              <th>Memory Type</th>
+                              <th>Memroy Size(GB)</th>
+                              <th>Memory Bandwidth(GB/s)</th>
+                              <th>缓存类型</th>
+                              <th>缓存容量</th>
+                              <th>缓存带宽</th>
+                              <th>缓存类型</th>
+                              <th>缓存容量</th>
+                              <th>缓存带宽</th>
+                              <th>算力架构</th>
+                              <th>Parallelism Mode</th>
+                              <th>通信带宽</th>
+                              <th>Scalar Precision</th>
+                              <th>INT8向量算力</th>
+                              <th>FP16向量算力</th>
+                              <th>FP32向量算力</th>
+                              <th>Vector Precision</th>
+                              <th>INT8向量算力</th>
+                              <th>FP16向量算力</th>
+                              <th>FP32向量算力</th>
+                              <th>Tensor Precision</th>
+                              <th>INT8向量算力</th>
+                              <th>FP16向量算力</th>
+                              <th>FP32向量算力</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            {{ else if eq $info_source "keywords" }}
+				<div class="container text-center ">
+					<p class="home-description">
+						{{ $keywords }}
+					</p>
+				</div>
+            {{ else if eq $info_source "create_use"}}
+                <h2 class="home-section-title">{{ i18n "created_by" }}</h2>
+                <div class="row home-used-by-wrapper home-used-by-created">
+                    {{ range .Site.Data.overview.created_by_info }}
+                    <div class="col-md-4 text-center">
+                        <a class="home-used-by-item" href="{{ .href }}" target="_blank" rel="noopener">
+                            <img class="used-by-logo" src="{{ .imgSrc }}" alt="{{ .alt }}">
+                        </a>
+                    </div>
+                    {{ end }}
+                </div>
+                <h2 class="home-section-title">{{ i18n "used_by"  }}</h2>
+                <div class="home-used-by-wrapper home-used-by-created">
+                    {{ range .Site.Data.overview.used_by_info }}
+                    <div>
+                        <a class="home-used-by-item" href="{{ .href }}" target="_blank" rel="noopener">
+                            <img class="used-by-logo" src="{{ .imgSrc }}" alt="{{ .alt }}">
+                        </a>
+                    </div>
+                    {{ end }}
+                    </a>
+                </div>
+            {{ else if eq $info_source "contact" }}
+                <div class="row top-hr home-footer-links">
+                    <div class="col-md-4 col-sm-6 col-xs-12 home-footer-links-item">
+                        <div class="home-footer-links-item-title">{{ i18n "docs" }}</div>
+                        {{ range .Site.Data.overview.docs_info }}
+                            <ul>
+                                <li><a href="{{ .href }}">{{ cond (eq $lang "en") .name_en .name }}</a></li>
+                            </ul>
+                        {{ end }}
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-xs-12 home-footer-links-item">
+                        <div class="home-footer-links-item-title">{{ i18n "contact_us" }}</div>
+                        <ul>
+                            <li><a href="mailto:bytemlperf@bytedance.com">{{ i18n "email" }}: {{ .Site.Params.project_email }}</a></li>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {{ else }}
+				{{ if eq .Page.File.Ext "md" }}
+					{{ .Inner | markdownify }}
+				{{ else }}
+					{{ .Inner | htmlUnescape | safeHTML }}
+				{{ end }}
+			{{ end }}
+		</div>
+	</div>
+</section>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.0/dist/echarts.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css">
+
+<script>
+    var currentPath = window.location.pathname;
+    var jsonPath;
+
+    // 检查当前路径是否包含"/ByteMLPerf/"
+    if (currentPath.includes('/ByteMLPerf/')) {
+        // 如果包含，则设置JSON路径为包含"/ByteMLPerf/"的路径
+        jsonPath = "/ByteMLPerf/json/hardware_info.json";
+    } else {
+        // 否则，设置JSON路径为不包含"/ByteMLPerf/"的路径
+        jsonPath = "/json/hardware_info.json";
+    }
+
+    $.getJSON(jsonPath, function(data) {
+        for(let i = 0; i < data.length; i++) {
+            if ($("#gpuSelect1 option[value='" + i + "']").length === 0) {
+            $('#gpuSelect1').append($('<option>', {
+                value: i,
+                text: data[i]['SKU参数']['厂商'] + " " + data[i]['SKU参数']['型号']
+            }));
+            }
+            if ($("#gpuSelect2 option[value='" + i + "']").length === 0) {
+            $('#gpuSelect2').append($('<option>', {
+                value: i,
+                text: data[i]['SKU参数']['厂商'] + " " + data[i]['SKU参数']['型号']
+            }));
+            }
+        }
+    });
+
+
+  
+    // 比较选定的GPUs
+    function compareGPUs() {
+        document.getElementById("comparisonTable").style.display = "table";
+        let index1 = $('#gpuSelect1').val();
+        let index2 = $('#gpuSelect2').val();
+        $('#comparisonTable tbody').empty();
+
+        const sizeMap = {
+            "Inference": 1,
+            "Training/Inference": 2,
+            "HHHL, Single Slot Card": 1,
+            "FHFL, Single Slot Card": 2,
+            "FHFL, Dual Slot Card": 3,
+            "GDDR6": 1,
+            "HBM2e": 2,
+            "HBM3": 4,
+            "PCIe 3.0x16": 1,
+            "PCIe 4.0x16": 2,
+            "PCIe 5.0x16": 3,
+        };
+
+        function appendToTable(key, gpu1, gpu2) {
+            let highlightedClass1 = '';
+            let highlightedClass2 = '';
+            if (key === '制程(NM)' || key === '功耗(W/TDP)') {
+                if (parseFloat(gpu1) < parseFloat(gpu2)) {
+                    highlightedClass1 = 'table-primary';
+                } else if (parseFloat(gpu2) < parseFloat(gpu1)) {
+                    highlightedClass2 = 'table-primary';
+                }
+            } else if (!isNaN(gpu1)) {
+                if (parseFloat(gpu1) > parseFloat(gpu2)) {
+                    highlightedClass1 = 'table-primary';
+                } else if (parseFloat(gpu2) > parseFloat(gpu1)) {
+                    highlightedClass2 = 'table-primary';
+                }
+            } else {
+                if (sizeMap.hasOwnProperty(gpu1) && sizeMap.hasOwnProperty(gpu2)) {
+                    if (sizeMap[gpu1] > sizeMap[gpu2]) {
+                        highlightedClass1 = 'table-primary';
+                    } else if (sizeMap[gpu1] < sizeMap[gpu2]) {
+                        highlightedClass2 = 'table-primary';
+                    }
+                }
+            }
+
+            const row = `<tr>
+                <td>${key}</td>
+                <td class="${highlightedClass1}">${gpu1}</td>
+                <td class="${highlightedClass2}">${gpu2}</td>
+            </tr>`;
+
+            $('#comparisonTable tbody').append(row);
+        }
+
+        function recursiveAppendToTable(obj1, obj2) {
+            for (const key in obj1) {
+                if (key.includes('量参数')|| key.includes('照片') || key.includes('功耗') || key.includes('架构图') || key.includes('内存容量') || key.includes('内存带宽')) {
+                   continue; 
+                }
+                if (typeof obj1[key] === 'object' && obj1[key] !== null) {
+                    recursiveAppendToTable(obj1[key], obj2[key] || {});
+                } else {
+                    if (obj1[key] !== null && obj2[key] !== null){
+                        appendToTable(key, obj1[key] || "N/A", obj2[key] || "N/A");
+                    }
+                }
+            }
+        }
+        // 获取JSON数据
+        $.getJSON(jsonPath, function(data) {
+            let gpu1 = data[index1];
+            let gpu2 = data[index2];
+            recursiveAppendToTable(gpu1, gpu2)
+
+            document.getElementById("echartContainer").style.display = "block";
+            // 初始化 ECharts 图表
+            var myChart = echarts.init(document.getElementById('echartContainer'));
+            window.addEventListener("resize", function() {
+                myChart.resize();
+            });
+
+            let dataA = 
+            [
+                -gpu1['硬件参数']['功耗(W/TDP)'],
+                -gpu1['内存参数']['内存']['内存容量(GB)'],
+                -gpu1['内存参数']['内存']['内存带宽(GB/s)'],
+                -gpu1['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
+                -gpu1['算力参数']['张量参数']['FP16张量算力(TFLOPS)'],
+                -gpu1['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
+            ];  // 这些数据应该是动态生成的
+
+            let dataB =                     
+            [
+                gpu2['硬件参数']['功耗(W/TDP)'],
+                gpu2['内存参数']['内存']['内存容量(GB)'],
+                gpu2['内存参数']['内存']['内存带宽(GB/s)'],
+                gpu2['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
+                gpu2['算力参数']['张量参数']['FP16张量算力(TFLOPS)'], 
+                gpu2['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
+            ];   // 这些数据也应该是动态生成的
+
+            let minVal = Math.min(...dataA);
+            let maxVal = Math.max(...dataB);
+            const maxAbs = Math.max(Math.abs(minVal), Math.abs(maxVal));
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: 'Compute Capability Comparison',
+                    x: 'center'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true,
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function(params) {
+                        return params.map(function(param) {
+                            return `${param.seriesName}: ${Math.abs(param.data)}`;
+                        }).join('<br>');
+                    }
+                },
+                toolbox: {
+                    show: true,
+                    showTitle: true,
+                },
+                legend: {
+                    top: '7%',
+                    data:[gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'], gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号']]
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return Math.abs(value);
+                        }
+                    },
+                    min: -maxAbs,
+                    max: maxAbs
+                },
+                yAxis: {
+                    data: [
+                        "功耗(W/TDP)",
+                        "内存容量(GB)",
+                        "内存带宽(TB/s)",
+                        "INT8/FP8张量算力\n(TFLOPS)",
+                        "FP16/BF16张量算力\n(TFLOPS)", 
+                        "FP32张量算力\n(TFLOPS)",
+                    ],
+
+                },
+                series: [{
+                    name: gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'],
+                    type: 'bar',
+                    stack: 'Total',
+                    data: dataA,  // 这些数据应该是动态生成的
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return Math.abs(params.data);
+                        }
+                    }
+                },
+                {
+                    name: gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号'],
+                    type: 'bar',
+                    stack: 'Total',
+                    data: dataB,   // 这些数据也应该是动态生成的
+                    label: {
+                        show: true,
+
+                        formatter: function(params) {
+                            return Math.abs(params.data);
+                        }
+                    }
+                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表
+            myChart.setOption(option);
+        });
+    }
+</script>
+
+
+<script>
+    // 递归函数，用于提取字典中的所有值
+    function extractValues(obj) {
+        var output = [];
+        for (var key in obj) {
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                output = output.concat(extractValues(obj[key])); // 递归提取值
+            } else {
+                output.push(obj[key]);
+            }
+        }
+        return output;
+    }
+    var currentPath = window.location.pathname;
+    var jsonPath;
+
+    // 检查当前路径是否包含"/ByteMLPerf/"
+    if (currentPath.includes('/ByteMLPerf/')) {
+        // 如果包含，则设置JSON路径为包含"/ByteMLPerf/"的路径
+        jsonPath = "/ByteMLPerf/json/hardware_info.json";
+    } else {
+        // 否则，设置JSON路径为不包含"/ByteMLPerf/"的路径
+        jsonPath = "/json/hardware_info.json";
+    }
+    // 从result.json加载数据
+    $.getJSON(jsonPath, function(jsonArray) {
+        var finalData = [];
+        for (var i = 0; i < jsonArray.length; i++) {
+            finalData.push(extractValues(jsonArray[i]));
+        }
+
+        $(document).ready(function() {
+            $('body').on('click', 'a[data-toggle="modal"]', function(event) {
+                event.preventDefault();  // 阻止默认行为
+                var imgSrc = $(this).attr('data-img-src');  // 获取图片路径
+                $('#modalImage').attr('src', imgSrc);  // 设置模态窗口中的图片路径
+                $('#imageModal').modal('show');  // 显示模态窗口
+            });
+            $('.close').on('click', function() {
+                $('#imageModal').modal('hide');
+            });
+
+            $('#myTable').DataTable({
+                destroy: true, 
+                scrollX: true,  // 如果表格过宽，使用水平滚动
+                scrollY: '600px',  // 如果表格过宽，使用水平滚动
+                paging: false,   // 启用分页功能
+                searching: true, // 启用搜索功能
+                ordering: true,
+                order: [],
+                select: true,
+                data: finalData,  // 使用处理后的数据
+                columnDefs: [{
+                    targets: '_all', 
+                    render: function(data, type, row, meta) {
+                        if (typeof data === 'string' && data.endsWith('.png')) {
+                            return '<a href="#" data-toggle="modal" data-target="#imageModal" data-img-src="' + data + '"><img src="' + data + '" alt="Image" width="50" height="50" /></a>';
+                        }
+                        return data; 
+                    }
+                }]
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myChart = echarts.init(document.getElementById('echarts-container'));
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+
+        var dataHighPrecision = [10, 30, 45, 20, 25, 40];
+        var dataMediumPrecision = [5, 20, 36, 10, 10, 20];
+        var dataLowPrecision = [2, 12, 20, 8, 6, 10];
+
+        // 请求GitHub的JSON文件
+        fetch('https://api.github.com/repos/bytedance/ByteMLPerf/git/trees/main?recursive=1')
+        .then(response => response.json())
+        .then(data => {
+            const workloads_files = data.tree.filter(item => item.path.startsWith('byte_mlperf/workloads/') && item.type === 'blob');
+            const fileNames = workloads_files.map(file => {
+                // 提取文件名并去掉 .json 后缀
+                return file.path.split('/').pop().replace('.json', '');
+            });
+            const taskMap = fileNames.reduce((acc, fileName, index) => {
+                acc[fileName] = index;
+                return acc;
+            }, {});
+
+            const taskNames = workloads_files.map(file => {
+            // 提取文件名并去掉 .json 后缀
+                var fileName = file.path.split('/').pop()
+                return fileName.substring(0, fileName.lastIndexOf("-"));
+            });
+            // 更新图表的 xAxis 数据
+            option.xAxis.data = taskNames;
+
+            var vendors = data.tree.filter(item => {
+                var vendorName = item.path.split('/').pop();
+                return item.path.startsWith('byte_mlperf/reports/') && !item.path.includes('.') && vendorName == vendorName.toUpperCase() && vendorName != 'README';
+            }).map(item => item.path);
+            // console.log(vendorName);
+            var vendorNames = vendors.map(path => path.split('/').pop());
+            // 从完整的路径中提取文件夹名
+            var seriesPromises = vendorNames.map(vendor => {
+                const nullArray = Array(fileNames.length).fill(0);
+                var perfNames = data.tree.filter(item => {
+                    return item.path.startsWith('byte_mlperf/reports/' + vendor + '/')  && item.path.endsWith('.json');
+                }).map(item => item.path);
+
+                var perfDataPromises = perfNames.map(perfName => {
+                    return fetch('https://raw.githubusercontent.com/bytedance/ByteMLPerf/main/' + perfName)
+                        .then(response => response.json())
+                        .then(fileData => {
+                            // 假设你的json文件内容是一个数字值或你需要的任何特定的数据格式
+                            let maxQPS = Math.max(...fileData.Performance.map(perf => perf.QPS));
+                            return {[fileData.Model]: maxQPS};
+                        });
+                });
+                return Promise.all(perfDataPromises)
+                .then(results => {
+                    results.forEach(res => {
+                        const modelName = Object.keys(res)[0].toLowerCase();
+                        var index = taskMap[modelName];
+                        nullArray[index] = res[Object.keys(res)[0]];
+                    });
+
+                    return {
+                        name: vendor,
+                        type: 'bar',
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: nullArray
+                    };
+                });
+
+            });
+            Promise.all(seriesPromises)
+            .then(seriesData => {
+                option.series = seriesData;
+                myChart.setOption(option);
+            })
+            // // 使用GitHub的base64编码的内容，解码后解析为JSON
+            // const decodedData = JSON.parse(atob(data.content));
+            
+            // // 更新dataMediumPrecision数组
+            // dataMediumPrecision = decodedData.mediumPrecision;  // 假设JSON文件中有一个mediumPrecision数组
+
+            // // 初始化图表
+            // initializeChart();
+        });
+
+        
+        var option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: function(params) {
+                    // 当trigger为'axis'时，params是一个数组
+                    return params.map(p => 
+                        `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${p.color};"></span>${p.seriesName}: ${p.data}`
+                    ).join('<br>');
+                }
+            },
+            toolbox: {
+                show: true,
+                showTitle: true,
+                feature: {
+                    // mymediumPrecision: {
+                    //     show: true,
+                    //     title: 'FP16',
+                    //     icon: 'path://M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12z',
+                    //     onclick: function(){
+                    //         switchData('medium');
+                    //     }
+                    // },
+                    // mylowPrecision: {
+                    //     show: true,
+                    //     title: 'FP8',
+                    //     icon: 'path://M2.5 0A2.5 2.5 0 0 0 0 2.5v11A2.5 2.5 0 0 0 2.5 16h11a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 13.5 0h-11ZM1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11Z"',
+                    //     name: 'FP16',
+                    //     onclick: function(){
+                    //         switchData('low');
+                    //     }
+                    // },
+                    dataView: { show: true, readOnly: false },
+                    saveAsImage: { show: true }
+                }
+            },
+            legend: {},
+            xAxis: {
+                axisTick: { show: false },
+                data: [],
+                axisLabel: {
+                    interval: 0,  // 显示所有标签
+                    rotate: 20    // 如果标签过多导致重叠，可以设置此属性让标签斜着显示
+                }
+            },
+            yAxis: {
+                type: 'log',
+                logBase: 250000000
+            },
+            series: []
+        };
+
+        function switchData(precision) {
+            switch(precision) {
+                case 'medium':
+                    option.series[0].data = [];
+                    break;
+                case 'low':
+                    option.series[0].data = [];
+                    break;
+                default:
+                    option.series[0].data = [];
+            }
+            myChart.setOption(option);
+        }
+
+        myChart.setOption(option);
+    });
+</script>
