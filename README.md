@@ -2,7 +2,7 @@
 
 # ByteMLPerf
 
-The [Project_Name.io](https://www.Project_Name.io/) site is built with [Hugo](https://gohugo.io/) and hosted on [Github Pages](https://pages.github.com/).
+The [ByteMLPerf](https://www.Project_Name.io/) site is built with [Hugo](https://gohugo.io/) and hosted on [Github Pages](https://pages.github.com/).
 
 ## Prerequisites
 
