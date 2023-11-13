@@ -61,6 +61,11 @@ imgSrc = '/img/usedby/moffett.png'
 alt = 'moffett logo'
 
 [[used_by_info]]
+href = 'https://habana.ai/'
+imgSrc = '/img/usedby/habana.png'
+alt = 'habana logo'
+
+[[used_by_info]]
 href = 'https://www.streamcomputing.com/'
 imgSrc = '/img/usedby/stream.png'
 alt = 'stream logo'
