@@ -50,10 +50,6 @@
                                 <option selected>Select Hardware 2</option>
                             </select>
                         </div>
-                        <div class="col-auto">
-                            <!-- Bootstrap按钮 -->
-                            <button class="btn btn-primary" onclick="compareGPUs()">Compare</button>
-                        </div>
                     </div>
                     <div class="row mt-5">
                         <div class="col-md-6">
@@ -220,39 +216,74 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css">
 
 <script>
-    var currentPath = window.location.pathname;
-    var jsonPath;
+    async function fetchJson(url) {
+        const response = await fetch(url);
+        return await response.json();
+    }
+    var allData = [];
+    async function loadAndCompareGPUs() {
+        var repo = 'bytedance/ByteMLPerf';
+        var path = 'vendor_zoo';
 
-    // 检查当前路径是否包含"/ByteMLPerf/"
-    if (currentPath.includes('/ByteMLPerf/')) {
-        // 如果包含，则设置JSON路径为包含"/ByteMLPerf/"的路径
-        jsonPath = "/ByteMLPerf/json/hardware_info.json";
-    } else {
-        // 否则，设置JSON路径为不包含"/ByteMLPerf/"的路径
-        jsonPath = "/json/hardware_info.json";
+
+        try {
+            var folders = await fetchJson('https://api.github.com/repos/' + repo + '/contents/' + path);
+
+            for (const folder of folders) {
+                var files = await fetchJson(folder.url);
+
+                for (const file of files) {
+                    if (file.name.endsWith('.json')) { // 确保是 JSON 文件
+                        var jsonData = await fetchJson(file.download_url);
+                        var exists = allData.some(data => data['SKU参数']['型号'] === jsonData['SKU参数']['型号'])
+                        if (!exists) {
+                            allData.push(jsonData);
+                        }
+                    }
+                }
+            }
+
+            // 现在 allData 包含了所有 JSON 数据
+            // 接下来，你可以在这里使用 allData 做后续操作
+            // 比如更新下拉菜单、比较 GPUs 等
+
+            // 示例：更新下拉菜单
+            updateSelectMenus(allData);
+            // 当下拉菜单变更时调用 compareGPUs 函数
+            $('#gpuSelect1, #gpuSelect2').change(function() {
+                compareGPUs(allData);
+            });
+
+        } catch (error) {
+            console.error("Error loading JSON data: ", error);
+        }
     }
 
-    $.getJSON(jsonPath, function(data) {
-        for(let i = 0; i < data.length; i++) {
-            if ($("#gpuSelect1 option[value='" + i + "']").length === 0) {
-            $('#gpuSelect1').append($('<option>', {
-                value: i,
-                text: data[i]['SKU参数']['厂商'] + " " + data[i]['SKU参数']['型号']
-            }));
-            }
-            if ($("#gpuSelect2 option[value='" + i + "']").length === 0) {
-            $('#gpuSelect2').append($('<option>', {
-                value: i,
-                text: data[i]['SKU参数']['厂商'] + " " + data[i]['SKU参数']['型号']
-            }));
-            }
-        }
+    function updateSelectMenus(data) {
+        $('#gpuSelect1').empty();
+        $('#gpuSelect2').empty();
+        data.forEach((item, index) => {
+            const optionText = item['SKU参数']['厂商'] + " " + item['SKU参数']['型号'];
+            $('#gpuSelect1').append($('<option>', { value: index, text: optionText }));
+            $('#gpuSelect2').append($('<option>', { value: index, text: optionText }));
+        });
+        // 设置默认选项
+        $('#gpuSelect1').val(6); // 假设您想默认显示第一个 GPU
+        $('#gpuSelect2').val(3); // 假设您想默认显示第二个 GPU
+    }
+
+    // 加载完数据后调用 updateSelectMenus 并触发一次比较
+    loadAndCompareGPUs().then(() => {
+        updateSelectMenus(allData);
+        compareGPUs(allData); // 显示默认选项的比较结果
     });
 
-
+    $(document).ready(function() {
+        loadAndCompareGPUs();
+    });
   
     // 比较选定的GPUs
-    function compareGPUs() {
+    function compareGPUs(allData) {
         document.getElementById("comparisonTable").style.display = "table";
         let index1 = $('#gpuSelect1').val();
         let index2 = $('#gpuSelect2').val();
@@ -320,130 +351,128 @@
                 }
             }
         }
-        // 获取JSON数据
-        $.getJSON(jsonPath, function(data) {
-            let gpu1 = data[index1];
-            let gpu2 = data[index2];
-            recursiveAppendToTable(gpu1, gpu2)
+        let gpu1 = allData[index1];
+        let gpu2 = allData[index2];
+        recursiveAppendToTable(gpu1, gpu2)
 
-            document.getElementById("echartContainer").style.display = "block";
-            // 初始化 ECharts 图表
-            var myChart = echarts.init(document.getElementById('echartContainer'));
-            window.addEventListener("resize", function() {
-                myChart.resize();
-            });
-
-            let dataA = 
-            [
-                -gpu1['硬件参数']['功耗(W/TDP)'],
-                -gpu1['内存参数']['内存']['内存容量(GB)'],
-                -gpu1['内存参数']['内存']['内存带宽(GB/s)'],
-                -gpu1['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
-                -gpu1['算力参数']['张量参数']['FP16张量算力(TFLOPS)'],
-                -gpu1['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
-            ];  // 这些数据应该是动态生成的
-
-            let dataB =                     
-            [
-                gpu2['硬件参数']['功耗(W/TDP)'],
-                gpu2['内存参数']['内存']['内存容量(GB)'],
-                gpu2['内存参数']['内存']['内存带宽(GB/s)'],
-                gpu2['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
-                gpu2['算力参数']['张量参数']['FP16张量算力(TFLOPS)'], 
-                gpu2['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
-            ];   // 这些数据也应该是动态生成的
-
-            let minVal = Math.min(...dataA);
-            let maxVal = Math.max(...dataB);
-            const maxAbs = Math.max(Math.abs(minVal), Math.abs(maxVal));
-
-            // 指定图表的配置项和数据
-            var option = {
-                title: {
-                    text: 'Compute Capability Comparison',
-                    x: 'center'
-                },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true,
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        type: 'shadow'
-                    },
-                    formatter: function(params) {
-                        return params.map(function(param) {
-                            return `${param.seriesName}: ${Math.abs(param.data)}`;
-                        }).join('<br>');
-                    }
-                },
-                toolbox: {
-                    show: true,
-                    showTitle: true,
-                },
-                legend: {
-                    top: '7%',
-                    data:[gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'], gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号']]
-                },
-                xAxis: {
-                    type: 'value',
-                    axisLabel: {
-                        formatter: function(value) {
-                            return Math.abs(value);
-                        }
-                    },
-                    min: -maxAbs,
-                    max: maxAbs
-                },
-                yAxis: {
-                    data: [
-                        "功耗(W/TDP)",
-                        "内存容量(GB)",
-                        "内存带宽(TB/s)",
-                        "INT8/FP8张量算力\n(TFLOPS)",
-                        "FP16/BF16张量算力\n(TFLOPS)", 
-                        "FP32张量算力\n(TFLOPS)",
-                    ],
-
-                },
-                series: [{
-                    name: gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'],
-                    type: 'bar',
-                    stack: 'Total',
-                    data: dataA,  // 这些数据应该是动态生成的
-                    label: {
-                        show: true,
-                        formatter: function(params) {
-                            return Math.abs(params.data);
-                        }
-                    }
-                },
-                {
-                    name: gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号'],
-                    type: 'bar',
-                    stack: 'Total',
-                    data: dataB,   // 这些数据也应该是动态生成的
-                    label: {
-                        show: true,
-
-                        formatter: function(params) {
-                            return Math.abs(params.data);
-                        }
-                    }
-                }]
-            };
-
-            // 使用刚指定的配置项和数据显示图表
-            myChart.setOption(option);
+        document.getElementById("echartContainer").style.display = "block";
+        // 初始化 ECharts 图表
+        var myChart = echarts.init(document.getElementById('echartContainer'));
+        window.addEventListener("resize", function() {
+            myChart.resize();
         });
+
+        let dataA = 
+        [
+            -gpu1['硬件参数']['功耗(W/TDP)'],
+            -gpu1['内存参数']['内存']['内存容量(GB)'],
+            -gpu1['内存参数']['内存']['内存带宽(GB/s)'],
+            -gpu1['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
+            -gpu1['算力参数']['张量参数']['FP16张量算力(TFLOPS)'],
+            -gpu1['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
+        ];  // 这些数据应该是动态生成的
+
+        let dataB =                     
+        [
+            gpu2['硬件参数']['功耗(W/TDP)'],
+            gpu2['内存参数']['内存']['内存容量(GB)'],
+            gpu2['内存参数']['内存']['内存带宽(GB/s)'],
+            gpu2['算力参数']['张量参数']['INT8张量算力(TFLOPS)'],
+            gpu2['算力参数']['张量参数']['FP16张量算力(TFLOPS)'], 
+            gpu2['算力参数']['张量参数']['FP32张量算力(TFLOPS)'], 
+        ];   // 这些数据也应该是动态生成的
+
+        let minVal = Math.min(...dataA);
+        let maxVal = Math.max(...dataB);
+        const maxAbs = Math.max(Math.abs(minVal), Math.abs(maxVal));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: 'Compute Capability Comparison',
+                x: 'center'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true,
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: function(params) {
+                    return params.map(function(param) {
+                        return `${param.seriesName}: ${Math.abs(param.data)}`;
+                    }).join('<br>');
+                }
+            },
+            toolbox: {
+                show: true,
+                showTitle: true,
+            },
+            legend: {
+                top: '7%',
+                data:[gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'], gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号']]
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: {
+                    formatter: function(value) {
+                        return Math.abs(value);
+                    }
+                },
+                min: -maxAbs,
+                max: maxAbs
+            },
+            yAxis: {
+                data: [
+                    "功耗(W/TDP)",
+                    "内存容量(GB)",
+                    "内存带宽(TB/s)",
+                    "INT8/FP8张量算力\n(TFLOPS)",
+                    "FP16/BF16张量算力\n(TFLOPS)", 
+                    "FP32张量算力\n(TFLOPS)",
+                ],
+
+            },
+            series: [{
+                name: gpu1['SKU参数']['厂商'] + " " + gpu1['SKU参数']['型号'],
+                type: 'bar',
+                stack: 'Total',
+                data: dataA,  // 这些数据应该是动态生成的
+                label: {
+                    show: true,
+                    formatter: function(params) {
+                        return Math.abs(params.data);
+                    }
+                }
+            },
+            {
+                name: gpu2['SKU参数']['厂商'] + " " + gpu2['SKU参数']['型号'],
+                type: 'bar',
+                stack: 'Total',
+                data: dataB,   // 这些数据也应该是动态生成的
+                label: {
+                    show: true,
+
+                    formatter: function(params) {
+                        return Math.abs(params.data);
+                    }
+                }
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表
+        myChart.setOption(option);
     }
 </script>
 
 
 <script>
+
     // 递归函数，用于提取字典中的所有值
     function extractValues(obj) {
         var output = [];
@@ -456,24 +485,41 @@
         }
         return output;
     }
-    var currentPath = window.location.pathname;
-    var jsonPath;
 
-    // 检查当前路径是否包含"/ByteMLPerf/"
-    if (currentPath.includes('/ByteMLPerf/')) {
-        // 如果包含，则设置JSON路径为包含"/ByteMLPerf/"的路径
-        jsonPath = "/ByteMLPerf/json/hardware_info.json";
-    } else {
-        // 否则，设置JSON路径为不包含"/ByteMLPerf/"的路径
-        jsonPath = "/json/hardware_info.json";
+    async function fetchJson(url) {
+        const response = await fetch(url);
+        return await response.json();
     }
-    // 从result.json加载数据
-    $.getJSON(jsonPath, function(jsonArray) {
-        var finalData = [];
-        for (var i = 0; i < jsonArray.length; i++) {
-            finalData.push(extractValues(jsonArray[i]));
-        }
 
+    async function loadJsonData() {
+        var repo = 'bytedance/ByteMLPerf';
+        var path = 'vendor_zoo';
+        var finalData = [];
+
+        try {
+            // 获取 vendor_zoo 下所有子目录
+            var folders = await fetchJson('https://api.github.com/repos/' + repo + '/contents/' + path);
+
+            for (const folder of folders) {
+                // 获取每个子目录下的所有 JSON 文件
+                var files = await fetchJson(folder.url);
+
+                for (const file of files) {
+                    if (file.name.endsWith('.json')) { // 检查文件是否为 JSON
+                        var jsonData = await fetchJson(file.download_url);
+                        finalData.push(extractValues(jsonData));
+                    }
+                }
+            }
+
+            initializeDataTable(finalData);
+        } catch (error) {
+            console.error("Error loading JSON data: ", error);
+        }
+    }
+
+
+    function initializeDataTable(finalData) {
         $(document).ready(function() {
             $('body').on('click', 'a[data-toggle="modal"]', function(event) {
                 event.preventDefault();  // 阻止默认行为
@@ -484,8 +530,8 @@
             $('.close').on('click', function() {
                 $('#imageModal').modal('hide');
             });
-
             $('#myTable').DataTable({
+                data: finalData,  // 使用处理后的数据
                 destroy: true, 
                 scrollX: true,  // 如果表格过宽，使用水平滚动
                 scrollY: '600px',  // 如果表格过宽，使用水平滚动
@@ -494,19 +540,21 @@
                 ordering: true,
                 order: [],
                 select: true,
-                data: finalData,  // 使用处理后的数据
                 columnDefs: [{
                     targets: '_all', 
                     render: function(data, type, row, meta) {
                         if (typeof data === 'string' && data.endsWith('.png')) {
-                            return '<a href="#" data-toggle="modal" data-target="#imageModal" data-img-src="' + data + '"><img src="' + data + '" alt="Image" width="50" height="50" /></a>';
+                            var baseUrl = 'https://raw.githubusercontent.com/bytedance/ByteMLPerf/main/';
+                            var fullPath = baseUrl + data;  // 构建完整的图片 URL
+                            return '<a href="#" data-toggle="modal" data-target="#imageModal" data-img-src="' + fullPath + '"><img src="' + fullPath + '" alt="Image" width="50" height="50" /></a>';
                         }
-                        return data; 
+                        return data;
                     }
                 }]
             });
         });
-    });
+    }
+    loadJsonData();
 </script>
 
 <script>
@@ -616,23 +664,6 @@
                 show: true,
                 showTitle: true,
                 feature: {
-                    // mymediumPrecision: {
-                    //     show: true,
-                    //     title: 'FP16',
-                    //     icon: 'path://M8 15V1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8zm6 1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12z',
-                    //     onclick: function(){
-                    //         switchData('medium');
-                    //     }
-                    // },
-                    // mylowPrecision: {
-                    //     show: true,
-                    //     title: 'FP8',
-                    //     icon: 'path://M2.5 0A2.5 2.5 0 0 0 0 2.5v11A2.5 2.5 0 0 0 2.5 16h11a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 13.5 0h-11ZM1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11Z"',
-                    //     name: 'FP16',
-                    //     onclick: function(){
-                    //         switchData('low');
-                    //     }
-                    // },
                     dataView: { show: true, readOnly: false },
                     saveAsImage: { show: true }
                 }
