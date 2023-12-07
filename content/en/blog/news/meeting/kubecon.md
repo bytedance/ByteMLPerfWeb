@@ -202,7 +202,7 @@ ByteMLPerf also hopes to act as a bridge between businesses and manufacturers, m
 
 Result-Oriented Approach
 
-### 以结果为导向
+### Result-Oriented Approach
 Finally, let's look at an example of a result-oriented approach.
 
 <div align="center">
