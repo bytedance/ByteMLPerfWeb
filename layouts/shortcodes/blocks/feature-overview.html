@@ -592,7 +592,7 @@
 
             var vendors = data.tree.filter(item => {
                 var vendorName = item.path.split('/').pop();
-                return item.path.startsWith('byte_mlperf/reports/') && !item.path.includes('.') && vendorName == vendorName.toUpperCase() && vendorName != 'README';
+                return item.path.startsWith('byte_infer_perf/general_perf/reports/') && !item.path.includes('.') && vendorName == vendorName.toUpperCase() && vendorName != 'README';
             }).map(item => item.path);
             // console.log(vendorName);
             var vendorNames = vendors.map(path => path.split('/').pop());
@@ -600,7 +600,7 @@
             var seriesPromises = vendorNames.map(vendor => {
                 const nullArray = Array(fileNames.length).fill(0);
                 var perfNames = data.tree.filter(item => {
-                    return item.path.startsWith('byte_mlperf/reports/' + vendor + '/')  && item.path.endsWith('.json');
+                    return item.path.startsWith('byte_infer_perf/general_perf/reports/' + vendor + '/')  && item.path.endsWith('.json');
                 }).map(item => item.path);
 
                 var perfDataPromises = perfNames.map(perfName => {
