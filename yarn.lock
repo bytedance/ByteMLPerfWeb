@@ -498,10 +498,10 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-simple-git-hooks@^2.8.1:
-  version "2.8.1"
-  resolved "http://bnpm.byted.org/simple-git-hooks/-/simple-git-hooks-2.8.1.tgz#05e8306f3211d7eee9f5fdb5cc42521280ee82a9"
-  integrity sha512-DYpcVR1AGtSfFUNzlBdHrQGPsOhuuEJ/FkmPOOlFysP60AHd3nsEpkGq/QEOdtUyT1Qhk7w9oLmFoMG+75BDog==
+simple-git-hooks@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/simple-git-hooks/-/simple-git-hooks-2.10.0.tgz#34a31a0cfd9fa7e26ad4149fad039437bc47ba48"
+  integrity sha512-TtCytVYfV77pILCkzVxpOSgYKHQyaO7fBI/iwG5bLGb0dIo/v/K1Y1IZ5DN40RQu6WNNJiN0gkuRvSYjxOhFog==
 
 slash@^4.0.0:
   version "4.0.0"
