@@ -1,38 +1,46 @@
-<!-- override from docsy: we're not tracking changes to the docsy base file. -->
+# ByteMLPerf Documentation
 
-# ByteMLPerf
+📄 Documentation for ByteMLPerf.
 
-The [ByteMLPerf](https://www.Project_Name.io/) site is built with [Hugo](https://gohugo.io/) and hosted on [Github Pages](https://pages.github.com/).
+## Translation
 
-## Prerequisites
+Currently ByteMLPerf provides documentation in English and Chinese. If you can use Chinese, please update both documents at the same time. Otherwise, just update the English documentation.
 
-The following are basic prerequisites for developing this project:
-
-- Install a recent release of the Hugo "extended" version. If you install from
-  the [Hugo release page](https://github.com/gohugoio/hugo/releases), make sure
-  you download the `_extended` version which supports SCSS.
-
-> If you have installed the latest version of go, you can install directly by command `go install -tags extended github.com/gohugoio/hugo@latest`
-
-## Preview
-
-```sh
-hugo server -D
+```bash
+root
+└─ docs
+   ├─ en     # English Document
+   └─ zh     # Chinese Document
 ```
 
-## Contributing ![GitHub](https://img.shields.io/github/contributors/Project_Name/Project_Name.github.io)
+## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/Project_Name/Project_Name.github.io/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-See also the list of [contributors](https://github.com/Project_Name/Project_Name.github.io/graphs/contributors) who participated in this project.
+This website is built with [Rspress](https://rspress.dev), the document content can be written using markdown or mdx syntax. You can refer to the [Rspress Website](https://rspress.dev) for detailed usage.
 
-## License ![GitHub](https://img.shields.io/github/license/Project_Name/Project_Name.github.io)
+The source code of Rspress can be found in [this folder](https://github.com/web-infra-dev/rspress).
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE.md](https://github.com/Project_Name/Project_Name.github.io/blob/master/LICENSE) file for details
+If you have any problems using the Rspress, please create a new issue at [Rspress Issues](https://github.com/web-infra-dev/rspress/issues).
 
-This project is overridden from [docsy](http://github.com/google/docsy), and we're not tracking changes to the docsy base file.
+### Install pnpm
 
-## Credits
+```bash
+# enable pnpm with corepack
+# only available on node >= `v14.19.0`
+corepack enable
 
-The website is deployed on [Vercel](https://vercel.com/?utm_source=Project_Name&utm_campaign=oss).
+# or install pnpm 7 directly
+npm install -g pnpm@7
+```
 
-![Vercel](https://images.ctfassets.net/e5382hct74si/78Olo8EZRdUlcDUFQvnzG7/fa4cdb6dc04c40fceac194134788a0e2/1618983297-powered-by-vercel.svg)
+### Local Development
+
+```bash
+pnpm install
+pnpm run dev
+```
+
+### Production Build
+
+```bash
+pnpm run build
+```

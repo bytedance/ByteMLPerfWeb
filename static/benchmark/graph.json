@@ -1,0 +1,73 @@
+
+{
+    "generalPerf" : {
+        "vendors": [
+            "SPU",
+            "HPU",
+            "STC",
+            "IPU"
+        ],
+        "modelData": {
+            "albert": {
+                "SPU": 10824.99,
+                "HPU": 2030,
+                "STC": 824.49,
+                "IPU": 3280
+            },
+            "bert": {
+                "SPU": 7738.91,
+                "HPU": 1970,
+                "STC": 813.86,
+                "IPU": 3134
+            },
+            "conformer encoder": {
+                "SPU": 8211.7,
+                "IPU": 9341
+            },
+            "resnet50": {
+                "SPU": 52423.97,
+                "HPU": 8279,
+                "IPU": 13542
+            },
+            "roberta": {
+                "SPU": 8107.39,
+                "STC": 800.7,
+                "IPU": 3088
+            },
+            "deberta": {
+                "HPU": 319,
+                "IPU": 1702
+            },
+            "swin large": {
+                "HPU": 341,
+                "IPU": 315
+            },
+            "widedeep": {
+                "STC": 2395899.9,
+                "IPU": 31446195
+            },
+            "videobert": {
+                "IPU": 3691
+            },
+            "clip": {
+                "IPU": 7305
+            },
+            "roformer": {
+                "IPU": 2520
+            }
+        }
+    },
+    "llmPerf" : {
+        "vendors": {},
+        "modelData" : {}
+    },
+    "microPerf" : {
+        "vendors": {},
+        "modelData" : {}
+    },
+    "trainingPerf" : {
+        "vendors": {},
+        "modelData" : {}
+    }
+}
+  

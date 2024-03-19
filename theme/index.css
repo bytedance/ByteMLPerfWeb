@@ -1,0 +1,40 @@
+/* It seems tailwind have style `display: list-style` by default */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+summary {
+  display: block;
+}
+
+:root {
+  --rp-c-brand: #0095ff;
+  --rp-c-brand-light: #00aaff;
+  --rp-c-brand-lighter: #ecf4ff;
+  --rp-c-brand-dark: #0077ff;
+  --rp-c-brand-darker: #3367af;
+  --rp-c-brand-tint: rgba(127, 163, 255, 0.16);
+  --rp-code-title-bg: rgba(61, 171, 250, 0.15);
+  --rp-code-block-bg: rgba(135, 231, 244, 0.05);
+  --rp-custom-block-info-bg: rgba(250, 192, 61, 0.05);
+  --rp-custom-block-info-border: rgba(250, 192, 61, 0.5);
+}
+
+.dark {
+  --rp-code-title-bg: rgba(128, 128, 128, 0.2);
+  --rp-code-block-bg: #242424;
+}
+
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+
+[disabled] {
+  cursor: not-allowed;
+}
+
+[role='tablist'] {
+  max-width: 100vw;
+  padding: 0 10px;
+}

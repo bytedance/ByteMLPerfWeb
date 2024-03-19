@@ -1,0 +1,21 @@
+.title {
+  background: linear-gradient(to right, #57d3cd, #6aaef1, #2e43cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.font-mono {
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.table-title {
+  background: var(--rp-code-title-bg);
+}
+
+.table-content {
+  background: var(rp-code-block-bg);
+}
+
+
+

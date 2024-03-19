@@ -1,0 +1,32 @@
+.title {
+  background: linear-gradient(to right, #57d3cd, #6aaef1, #2e43cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.font-mono {
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.progress-bar-container {
+  width: 50vw;
+  height: 50px;
+  border-radius: var(--rp-radius-small);
+  padding: 4px;
+  padding-right: 15px;
+  border: 1px solid var(--rp-c-gray-light-4);
+  box-sizing: content-box;
+}
+
+.benchmark-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-top: 15px;
+  height: auto;
+  border-radius: var(--rp-radius-small);
+}

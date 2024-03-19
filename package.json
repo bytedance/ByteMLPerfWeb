@@ -1,34 +1,52 @@
 {
-  "name": "Project_Name",
-  "version": "0.0.1",
-  "description": "Hugo theme for technical documentation.",
-  "main": "none.js",
+  "name": "@modern-js/bytemlperf-doc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "hugo server -D",
-    "postinstall": "simple-git-hooks",
-    "format": "node scripts/format/index.mjs"
+    "prepare": "husky install",
+    "dev": "rspress dev",
+    "build": "rspress build",
+    "format": "prettier docs/**/*.{md,mdx} --write",
+    "spell": "npx cspell docs/**/*.{ts,tsx,js,jsx,md,mdx}",
+    "caseCheck": "npx case-police docs/**/*.{md,mdx}",
+    "preview": "rspress preview"
   },
-  "simple-git-hooks": {
-    "pre-commit": "npm run format"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Project_Name/clouwego.github.io.git"
-  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Project_Name/Project_Name.github.io/issues"
+  "nano-staged": {
+    "*.{ts,tsx,js,jsx,md,mdx}": [
+      "prettier --write",
+      "npx cspell --cache"
+    ]
   },
-  "homepage": "https://github.com/Project_Name/Project_Name.github.io#readme",
+  "packageManager": "pnpm@8.6.10",
+  "dependencies": {
+    "axios": "^1.6.1",
+    "date-fns": "^2.29.3",
+    "feed": "^4.2.2",
+    "framer-motion": "^10.0.0",
+    "markdown-to-jsx": "^7.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.4.3",
+    "rsfamily-nav-icon": "^1.0.1",
+    "semver": "^7.5.4",
+    "tailwindcss": "^3.2.7",
+    "echarts": "^5.5.0"
+  },
   "devDependencies": {
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.26",
-    "postcss-cli": "^10.1.0",
-    "autocorrect-node": "^2.6.2",
-    "chalk": "^5.3.0",
-    "jsonc-parser": "^3.2.0",
-    "markdownlint": "^0.29.0",
-    "simple-git-hooks": "^2.8.1"
+    "@modern-js/tsconfig": "^2.46.1",
+    "@rspress/shared": "1.11.0",
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.27",
+    "@types/semver": "^7.5.2",
+    "case-police": "0.5.10",
+    "husky": "^8.0.3",
+    "nano-staged": "^0.8.0",
+    "prettier": "^2.8.3",
+    "rspress": "1.11.0",
+    "typescript": "^5.0.4"
   }
 }

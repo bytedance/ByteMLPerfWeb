@@ -1,0 +1,38 @@
+import { Tabs, Tab } from '@theme';
+
+# Quick Start
+
+This chapter will get you started with ByteMLPerf using a simple executable example.
+
+## Usage
+
+The user uses launch.py as the entry point. When using byte mlperf to evaluate the model, you only need to pass in two parameters ``--task`` and ``--hardware_type``, as shown below:
+<Tabs values={[{ label: 'bash' }]}>
+  <Tab>
+
+```sh
+python3 launch.py --task xxx --hardware_type xxx
+```
+
+  </Tab> 
+
+
+  <Tab>
+
+```sh
+```
+
+  </Tab>
+</Tabs>
+
+1. **``--task``**: parameter is the name of the incoming workload. You need to specify the workload. For example, if you would like to evaluate the workload: ``bert-tf-fp16.json``, you need to specify ``--task bert-tf-fp16``.
+Note: All workloads are defined under ``byte_mlperf/workloads``, and the name needs to be aligned with the file name when passing parameters. The current format is model-framework-precision.
+
+2. **``--hardware_type``**: parameter is the incoming hardware_type name, there is no default value, it must be specified by the user. Example: To evaluate Habana Goya, specify --hardware_type GOYA .
+Note: All hardware types are defined under byte_mlperf/backends, and the name needs to be aligned with the folder name when passing parameters.
+
+3. **``--compile_only``**: parameter will make task stoped once compilation is finished
+
+4. **``--show_task_list``**: parameter will print all task name
+
+5. **``--show_hardware_list``**: parameter will print all hardware backend
