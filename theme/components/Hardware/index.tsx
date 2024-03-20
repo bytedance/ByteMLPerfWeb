@@ -16,11 +16,11 @@ export function Hardware() {
     setData(BENCHMARK_DATA);
   }, []);
 
-  const handleImageClick = (imageSrc) => {
-    setSelectedImage(imageSrc);
+  const handleImageClick = (imageSrc: string) => {
+    const fullPath = `/${imageSrc}`;
+    setSelectedImage(fullPath);
     setIsModalOpen(true);
   };
-  console.log(data)
   return (
     <div className="relative max-w-6xl mx-auto py-10 my-15">
       <div className="flex flex-center flex-col">
@@ -35,35 +35,89 @@ export function Hardware() {
         <table className="table-auto border">
           <thead className={styles['table-title']}>
             <tr>
-              <th className="whitespace-nowrap" colSpan={4}>SKU</th>
-              <th className="whitespace-nowrap" colSpan={4}>Board Design</th>
-              <th className="whitespace-nowrap" colSpan={10}>Memory Specifications</th>
-              <th className="whitespace-nowrap" colSpan={16}>Computing Performance Specifications</th>
-              <th className="whitespace-nowrap" colSpan={5}>Networking Parameters</th>
+              <th className="whitespace-nowrap" colSpan={4}>
+                SKU
+              </th>
+              <th className="whitespace-nowrap" colSpan={4}>
+                Board Design
+              </th>
+              <th className="whitespace-nowrap" colSpan={10}>
+                Memory Specifications
+              </th>
+              <th className="whitespace-nowrap" colSpan={16}>
+                Computing Performance Specifications
+              </th>
+              <th className="whitespace-nowrap" colSpan={5}>
+                Networking Parameters
+              </th>
             </tr>
             <tr>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>Vendor</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>Name</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>Purpose</th>
-              <th className="whitespace-nowrap  px-4" rowSpan={2}>Picture</th>
-              <th className="whitespace-nowrap  px-4" rowSpan={2}>Process Size(NM)</th>
-              <th className="whitespace-nowrap  px-4" rowSpan={2}>Board Size</th>
-              <th className="whitespace-nowrap  px-4" rowSpan={2}>Bus Interface</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>TDP(W)</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>Memory Hierarchy Graph</th>
-              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>Memory</th>
-              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>一级缓存</th>
-              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>二级缓存</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>PE层次架构图</th>
-              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>PE</th>
-              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>Scalar Parameters</th>
-              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>Vector Parameters</th>
-              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>Tensor Parameters</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>通信方式</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>端口数量</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>RDMA协议</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>下行带宽</th>
-              <th className="whitespace-nowrap px-4" rowSpan={2}>上行带宽</th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                Vendor
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                Name
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                Purpose
+              </th>
+              <th className="whitespace-nowrap  px-4" rowSpan={2}>
+                Picture
+              </th>
+              <th className="whitespace-nowrap  px-4" rowSpan={2}>
+                Process Size(NM)
+              </th>
+              <th className="whitespace-nowrap  px-4" rowSpan={2}>
+                Board Size
+              </th>
+              <th className="whitespace-nowrap  px-4" rowSpan={2}>
+                Bus Interface
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                TDP(W)
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                Memory Hierarchy Graph
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>
+                Memory
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>
+                一级缓存
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>
+                二级缓存
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                PE层次架构图
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={3} rowSpan={1}>
+                PE
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>
+                Scalar Parameters
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>
+                Vector Parameters
+              </th>
+              <th className="whitespace-nowrap px-4" colSpan={4} rowSpan={1}>
+                Tensor Parameters
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                通信方式
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                端口数量
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                RDMA协议
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                下行带宽
+              </th>
+              <th className="whitespace-nowrap px-4" rowSpan={2}>
+                上行带宽
+              </th>
             </tr>
             <tr>
               <th className="whitespace-nowrap px-4">Memory Type</th>
@@ -96,63 +150,125 @@ export function Hardware() {
           <tbody className="divide-y divide-gray-200">
             {/* 动态填充表格行 */}
             {Object.entries(data).map(([key, device], index) => (
-              <tr key={key} className={`${styles['table-content']} hover:bg-slate-300`}>
+              <tr
+                key={key}
+                className={`${styles['table-content']} hover:bg-slate-300`}
+              >
                 {/* 根据你的数据结构，填充单元格 */}
-                <td className="whitespace-nowrap px-4">{device['SKU参数']['厂商']}</td>
-                <td className="whitespace-nowrap px-4">{device['SKU参数']['型号']}</td>
-                <td className="whitespace-nowrap">{device['SKU参数']['用途']}</td>
                 <td className="whitespace-nowrap px-4">
-                {device['SKU参数']['照片'] && device['SKU参数']['照片'] !== 'None' ? (
+                  {device['SKU参数']['厂商']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['SKU参数']['型号']}
+                </td>
+                <td className="whitespace-nowrap">
+                  {device['SKU参数']['用途']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['SKU参数']['照片'] &&
+                  device['SKU参数']['照片'] !== 'None' ? (
                     <img
-                      src={device['SKU参数']['照片']}
+                      src={`/${device['SKU参数']['照片']}`}
                       alt="Device"
-                      style={{ width: '50px', height: '50px', cursor: 'pointer' }}
-                      onClick={() => handleImageClick(device['SKU参数']['照片'])}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() =>
+                        handleImageClick(device['SKU参数']['照片'])
+                      }
                     />
                   ) : (
                     <span>-</span>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-4">{device['硬件参数']['制程(NM)']}</td>
-                <td className="whitespace-nowrap px-4">{device['硬件参数']['尺寸']}</td>
-                <td className="whitespace-nowrap px-4">{device['硬件参数']['接口']}</td>
-                <td className="whitespace-nowrap px-4">{device['硬件参数']['功耗(W/TDP)']}</td>
                 <td className="whitespace-nowrap px-4">
-                  {device['内存参数']['内存层次架构图'] && device['内存参数']['内存层次架构图'] !== 'None' ? (
-                      <img
-                        src={device['内存参数']['内存层次架构图']}
-                        alt="Memory Hierarchy"
-                        style={{ width: '50px', height: '50px', cursor: 'pointer' }}
-                        onClick={() => handleImageClick(device['内存参数']['内存层次架构图'])}
-                      />
-                    ) : (
-                      <span>-</span>
-                    )}
+                  {device['硬件参数']['制程(NM)']}
                 </td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['内存']['内存类型']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['内存']['内存容量(GB)']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['内存']['内存带宽(GB/s)']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['一级缓存']['缓存类型']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['一级缓存']['缓存容量(MB)']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['一级缓存']['缓存带宽(TB/s)']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['二级缓存']['缓存类型']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['二级缓存']['缓存容量(MB)']}</td>
-                <td className="whitespace-nowrap px-4">{device['内存参数']['二级缓存']['缓存带宽(TB/s)']}</td>
                 <td className="whitespace-nowrap px-4">
-                  {device['算力参数']['PE层次架构图'] && device['算力参数']['PE层次架构图'] !== 'None' ? (
-                      <img
-                        src={device['算力参数']['PE层次架构图']}
-                        alt="Memory Hierarchy"
-                        style={{ width: '50px', height: '50px', cursor: 'pointer' }}
-                        onClick={() => handleImageClick(device['算力参数']['PE层次架构图'])}
-                      />
-                    ) : (
-                      <span>-</span>
-                    )}
+                  {device['硬件参数']['尺寸']}
                 </td>
-                <td className="whitespace-nowrap px-4">{device['算力参数']['PE参数']['算力架构']}</td>
-                <td className="whitespace-nowrap px-4">{device['算力参数']['PE参数']['并行方式']}</td>
-                <td className="whitespace-nowrap px-4">{device['算力参数']['PE参数']['通信带宽(GB/s)']}</td>
+                <td className="whitespace-nowrap px-4">
+                  {device['硬件参数']['接口']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['硬件参数']['功耗(W/TDP)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['内存层次架构图'] &&
+                  device['内存参数']['内存层次架构图'] !== 'None' ? (
+                    <img
+                      src={`/${device['内存参数']['内存层次架构图']}`}
+                      alt="Memory Hierarchy"
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() =>
+                        handleImageClick(device['内存参数']['内存层次架构图'])
+                      }
+                    />
+                  ) : (
+                    <span>-</span>
+                  )}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['内存']['内存类型']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['内存']['内存容量(GB)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['内存']['内存带宽(GB/s)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['一级缓存']['缓存类型']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['一级缓存']['缓存容量(MB)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['一级缓存']['缓存带宽(TB/s)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['二级缓存']['缓存类型']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['二级缓存']['缓存容量(MB)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['内存参数']['二级缓存']['缓存带宽(TB/s)']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['算力参数']['PE层次架构图'] &&
+                  device['算力参数']['PE层次架构图'] !== 'None' ? (
+                    <img
+                      src={`/${device['算力参数']['PE层次架构图']}`}
+                      alt="Memory Hierarchy"
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() =>
+                        handleImageClick(device['算力参数']['PE层次架构图'])
+                      }
+                    />
+                  ) : (
+                    <span>-</span>
+                  )}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['算力参数']['PE参数']['算力架构']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['算力参数']['PE参数']['并行方式']}
+                </td>
+                <td className="whitespace-nowrap px-4">
+                  {device['算力参数']['PE参数']['通信带宽(GB/s)']}
+                </td>
                 {/* 更多td根据需要添加 */}
               </tr>
             ))}
@@ -166,7 +282,11 @@ export function Hardware() {
         >
           <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
             <div className="mt-3 text-center">
-              <img src={selectedImage} alt="Zoomed" style={{ maxWidth: '100%', maxHeight: '80vh' }} />
+              <img
+                src={selectedImage}
+                alt="Zoomed"
+                style={{ maxWidth: '100%', maxHeight: '80vh' }}
+              />
               <div className="mt-2">
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded"
