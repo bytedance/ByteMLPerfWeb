@@ -1,0 +1,42 @@
+.title {
+    background: linear-gradient(to right, #57d3cd, #6aaef1, #2e43cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .font-mono {
+    font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+      Bitstream Vera Sans Mono, Courier New, monospace;
+  }
+  
+  .table-title {
+    background: var(--rp-code-title-bg);
+  }
+  
+  .table-content {
+    background: var(rp-code-block-bg);
+  }
+  
+  .table-center {
+    th,
+    td {
+      text-align: center;
+      border: 1px solid #ddd; // 可选，增加边框以便更清晰地看到居中效果
+      padding: 8px; // 可选，为了美观可以增加一些填充
+    }
+  }
+  
+  .benchmark-bar {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 15px;
+    height: auto;
+    border-radius: var(--rp-radius-small);
+  }
+  
+  
+  

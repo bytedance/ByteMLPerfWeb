@@ -3,6 +3,7 @@ import { HomeFeature, Feature } from '../components/HomeFeatures';
 import { NoSSR, usePageData } from 'rspress/runtime';
 import { Benchmark } from '../components/Benchmark';
 import { Hardware } from '../components/Hardware';
+import { GPUComparisonECharts } from '../components/CompareTable';
 import { HomeFooter } from '../components/HomeFooter/index';
 import { Contributors } from '../components/Contributors';
 
@@ -29,7 +30,12 @@ export function HomeLayout() {
       <NoSSR>
         <Benchmark />
       </NoSSR>
-      <NoSSR><Hardware /></NoSSR>
+      <NoSSR>
+        <Hardware />
+      </NoSSR>
+      <NoSSR>
+        <GPUComparisonECharts />
+      </NoSSR>
       <Contributors />
       {/* Footer */}
       <HomeFooter />

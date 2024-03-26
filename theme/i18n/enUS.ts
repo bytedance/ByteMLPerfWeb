@@ -15,6 +15,8 @@ export const EN_US = {
   benchmarkDesc:
     'Emphasizing the reproducibility of results ensures that the evaluations are not only accurate but also trustworthy, allowing all participants to compare on a fair and transparent basis.',
   benchmarkDetail: 'See benchmark details',
+  chipcompareTitle: 'Chip Comparison',
+  chipcompareDesc: 'Compare details between different chips.',
   datasetTitle: 'Vendor Chip Infomation',
   datasetDesc: 'Provide accurate chip data for user reference and comparison.',
   recruit: 'Heterogeneous Hardware team is recruiting, welcome to join👏🏻',

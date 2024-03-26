@@ -2,6 +2,8 @@ ByteMLPerf
 bytemlperf
 SOTA
 sota
+RDMA
+Memroy
 lstm
 pytorch
 bert
