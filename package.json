@@ -25,6 +25,7 @@
   "dependencies": {
     "axios": "^1.6.1",
     "date-fns": "^2.29.3",
+    "echarts": "^5.5.0",
     "feed": "^4.2.2",
     "framer-motion": "^10.0.0",
     "markdown-to-jsx": "^7.2.1",
@@ -33,11 +34,11 @@
     "react-intersection-observer": "^9.4.3",
     "rsfamily-nav-icon": "^1.0.1",
     "semver": "^7.5.4",
-    "tailwindcss": "^3.2.7",
-    "echarts": "^5.5.0"
+    "tailwindcss": "^3.2.7"
   },
   "devDependencies": {
     "@modern-js/tsconfig": "^2.46.1",
+    "@rspress/plugin-shiki": "^1.18.1",
     "@rspress/shared": "1.11.0",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.27",

@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'rspress/config';
 import { NavItem, Sidebar } from '@rspress/shared';
+import { pluginShiki } from '@rspress/plugin-shiki';
 import { pluginRss, PluginRssOption } from './rspress/plugin-rss';
 import { toArray } from './rspress/plugin-rss/utils';
 
@@ -127,15 +128,24 @@ function getSidebarConfig(lang: 'zh' | 'en'): Sidebar {
     ],
     [getLink('/blog/')]: [
       {
-        text: getText('AI ASIC 的基准测试、优化和生态系统协作的整合', 'Integration of Benchmark Testing, Optimization, and Ecosystem Collaboration for AI ASICs'),
+        text: getText(
+          'AI ASIC 的基准测试、优化和生态系统协作的整合',
+          'Integration of Benchmark Testing, Optimization, and Ecosystem Collaboration for AI ASICs'
+        ),
         link: getLink('/blog/kubecon'),
       },
       {
-        text: getText('ByteMLPerf将参加Open Source Summit', 'ByteMLPerf will be participating in the upcoming Open Source Summit in Shanghai'),
+        text: getText(
+          'ByteMLPerf将参加Open Source Summit',
+          'ByteMLPerf will be participating in the upcoming Open Source Summit in Shanghai'
+        ),
         link: getLink('/blog/summit'),
       },
       {
-        text: getText('GRAPHCORE现已支持BYTEMLPERF', 'Graphcore now supports ByteMLPerf'),
+        text: getText(
+          'GRAPHCORE现已支持BYTEMLPERF',
+          'Graphcore now supports ByteMLPerf'
+        ),
         link: getLink('/blog/graphcore'),
       },
     ],
@@ -182,6 +192,7 @@ export default defineConfig({
     checkDeadLinks: true,
   },
   plugins: [
+    pluginShiki(),
     pluginRss({
       routePublicPath: PUBLISH_URL,
       feedOptions: { copyright: COPYRIGHT, link: PUBLISH_URL },
@@ -218,7 +229,8 @@ export default defineConfig({
       {
         lang: 'en',
         title: 'ByteMLPerf',
-        description: 'AI Accelerator Benchmark focuses on evaluating AI Accelerators',
+        description:
+          'AI Accelerator Benchmark focuses on evaluating AI Accelerators',
         nav: getNavConfig('en'),
         sidebar: getSidebarConfig('en'),
         label: 'English',
@@ -254,7 +266,10 @@ export default defineConfig({
         ...getMeta('og:title', 'ByteMLPerf'),
         ...getMeta('og:type', 'website'),
         ...getMeta('og:url', PUBLISH_URL),
-        ...getMeta('og:description', 'AI Accelerator Benchmark focuses on evaluating AI Accelerators'),
+        ...getMeta(
+          'og:description',
+          'AI Accelerator Benchmark focuses on evaluating AI Accelerators'
+        ),
         ...getMeta('twitter:site', '@bytemlperf'),
         ...getMeta('twitter:card', 'summary_large_image'),
       },

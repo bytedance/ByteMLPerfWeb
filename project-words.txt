@@ -35,3 +35,8 @@ randn
 NCCL
 nccl
 bfloat
+echarts
+HHHL
+FHFL
+GDDR
+Gaudi
