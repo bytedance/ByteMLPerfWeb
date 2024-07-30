@@ -1,6 +1,6 @@
 # ByteMLPerf Documentation
 
-📄 Documentation for ByteMLPerf.
+📄 Documentation for ByteMLPerfWeb.
 
 ## Translation
 
