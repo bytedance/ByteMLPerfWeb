@@ -32,20 +32,33 @@ jobs:
     
     steps:
     - name: Check out the repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
+    - uses: pnpm/action-setup@v3
       with:
-        node-version: 18.x
+        version: 8
+          
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: pnpm
 
     - name: Build
       run: |
         npm install
         npm run build
 
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    - name: Install dependencies
+      run: pnpm install
+    - name: Build with Rspress
+      run: |
+        pnpm run build
+          
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v2
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ./doc_build
 
@@ -59,4 +72,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
