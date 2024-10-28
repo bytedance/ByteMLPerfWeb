@@ -309,24 +309,54 @@ def postprocess(
 - sample 函数负责采样下一个 token，参数是需要被采用的一组请求和对这组请求模型推理输出的 logits，返回一个 List，是每个请求采样的 token 结果。top_k、top_p 等参数可以通过每个请求的 generate_config 来获取。
 - postprocess 函数负责处理采样的结果，参数是被采用的一组请求、推理结果以及采样 token 结果，返回值是每个请求对应的 GenerateResult。
 
+
+
 ## 厂商接入测试
-
-### 环境
-
+### 要求
 - Python >= 3.8
-- torch==2.0.1
+- torch >= 2.1.0
 
-### Installation
-
+### 安装
 ```bash
-pip3 install torch==2.0.1
+# 厂商可以安装自己适配的torch版本
+pip3 install torch==2.3.1 --index-url https://download.pytorch.org/whl/cu121
+
+# 安装其他依赖库
 pip3 install -r requirements.txt
 ```
 
-### 测试
+### 快速测试（测试模型精度和性能）
+确认已经完成下述安装步骤以进行测试：
+1. 修改模型任务配置，比如 [mixtral-torch-bf16-8x22b.json](https://github.com/bytedance/ByteMLPerf/blob/main/byte_infer_perf/llm_perf/model_zoo/mixtral-torch-bf16-8x22b.json)
+2. 使用 [prepare_model.py](https://github.com/bytedance/ByteMLPerf/blob/main/byte_infer_perf/llm_perf/prepare_model.py) 或者 [huggingface-cli](https://huggingface.co/docs/huggingface_hub/guides/cli) 下载模型权重
+3. （如有）使用 [prepare_model.py](https://github.com/bytedance/ByteMLPerf/blob/main/byte_infer_perf/llm_perf/prepare_model.py) 下载参考输出。
+4. 开始精度和性能测试。
 
-厂商可以在完成 Backend 接入后，自行运行如下代码测试自己的 backend，其中 xxx 为新增 backend name
-
-```bash
-python3 byte_infer_perf/llm_perf/core/perf_engine.py --task chatglm2-torch-fp16-6b --hardware_type xxx
+运行下述命令开始自动精度和性能测试：
+```shell
+python3 byte_infer_perf/llm_perf/launch.py --hardware_type GPU --task mixtral-torch-bf16-8x22b
 ```
+
+### 精度测试（使用指定输入单测）
+下述命令启动运行 mixtral-8x22b 模型的服务，其中配置为tp_size=8, max_batch_size=8：
+```shell
+cd byte_infer_perf/llm_perf
+python3 ./server/launch_server.py --hardware_type GPU --model_config ./model_zoo/mixtral-torch-bf16-8x22b.json --tp_size 8 --max_batch_size 8
+```
+使用单个输入测试服务，并获取推理结果，logits numpy 文件和模型 forward 时间。输出文件会保存在 `./reports/single_query/` 目录下。
+```shell
+python3 ./script/single_query.py --prompt "What is 7 multiplied by 7?" --batch_size 8
+```
+
+
+## 性能测试
+单独测试运行 mixtral-8x22b 的 MpEngine 推理性能。运行下述命令可以获取性能输出。可以在 `./bench_model.py` 中修改测试用例。
+```shell
+python3 ./bench_model.py --hardware_type GPU --model_config ./model_zoo/mixtral-torch-bf16-8x22b.json --tp_size 8 --max_batch_size 8
+```
+
+输出会放在 `./reports/{hardware_type}/{model_config}/bench_model`:
+- **config.json**: 测试配置。
+- **context_perf.csv**: prefill阶段, 包含指定{batch_size, seq_len}对应的推理延迟。
+- **decode_perf.csv**: decode阶段, 包含指定{batch_size, seq_len}对应的推理延迟。
+- **output.txt**: 纯模型性能数据。
