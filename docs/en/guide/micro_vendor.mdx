@@ -1,1 +1,176 @@
 # Micro Vendor Intergration Guide
+
+## Create Backend
+
+Refer to the existing GPU implementation, create a folder for the corresponding hardware, a new hardware interface `backend_xpu.py` and `requirements.txt` of the required operating environment under the `ByteMLPerf/byte_micro_perf/backends/` path.
+It should be noted that when inheriting functions such as build_tensor, \_run_operation, initialize_ccl, etc., be sure to modify them to the corresponding hardware functions (such as torch.cuda.synchronize()).
+
+```python title=backend_gpu.py
+class BackendGPU(Backend):
+
+    # get the device name
+    def get_device_name(self):
+        return torch.cuda.get_device_name(0)
+
+    # If a hardware properties file is provided, read the file to obtain memory information
+    def get_backend_properties(self):
+        self.memory_limit = int(
+            torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        )
+
+        if self.vendor_path is not None and os.path.exists(self.vendor_path) and (self.vendor_path).endswith(".json"):
+            with open(self.vendor_path, "r") as f:
+                self.hw_info_dict = json.load(f)
+                # if the vendor path does not exist, please set this param manaually
+                self.bandwidth_limit = self.hw_info_dict["内存参数"]["内存"]["内存带宽(GB/s)"]
+        else:
+            log.warning(
+                "Vendor_path: [ {} ] was not found or not a full path points to json, please check your path!!! Otherwise, please set the hardware info manaually.".format(
+                    self.vendor_path
+                )
+            )
+
+    # Create multiple input tensors in advance according to the memory capacity of the hardware, and randomly select one as input to avoid L2 cache
+    # If the operator requires additional processing of the input tensor, it can be further processed in the process_inputs function. Return the appropriate input
+    def build_tensor(self, input_shapes, dtype):
+        torch.cuda.empty_cache()
+        torch_dtype = getattr(torch, dtype)
+
+        # compute size of input and output tensors
+        if hasattr(self.op, "compute_size"):
+            bytes_per_cnt = self.op.compute_size(input_shapes, dtype)
+        # default: input_tensors_size == output_tensor_size, all tensors have same dtype
+        else:
+            dtype_size = get_dtype_bytes(dtype)
+            element_num = 2 * sum([math.prod(shape) for shape in input_shapes])
+            bytes_per_cnt = dtype_size * element_num
+
+        # compute max avail tensors for compute
+        avail_bytes = (self.memory_limit - 4) * 1024**3
+        avail_cnts = avail_bytes // bytes_per_cnt
+        max_data_cnt = min(self.iterations, avail_cnts)
+
+        # create input tensors for each op
+        input_tensors_list = []
+        for _ in range(max_data_cnt):
+            # create input tensors
+            if hasattr(self.op, "custom_create_tensors"):
+                input_tensors = self.op.custom_create_tensors(input_shapes, torch_dtype, "cuda")
+                input_tensors_list.append(input_tensors)
+            # default: all input tensors have same dtype
+            else:
+                if torch_dtype in [torch.int8, torch.int32]:
+                    input_tensors = [
+                        torch.randint(-3, 3, size=shape, dtype=torch_dtype, device="cuda")
+                        for shape in input_shapes
+                    ]
+                else:
+                    input_tensors = [
+                        torch.randn(shape, dtype=torch_dtype, device="cuda")
+                        for shape in input_shapes
+                    ]
+                input_tensors_list.append(input_tensors)
+        if hasattr(self.op, "process_inputs"):
+            input_tensors_list = [
+                self.op.process_inputs(*(input_tensor))
+                for input_tensor in input_tensors_list
+            ]
+        return input_tensors_list, max_data_cnt, bytes_per_cnt
+
+    # Run the corresponding operator operation
+    def _run_operation(self, operation, inputs):
+        result = operation(*inputs)
+        return result
+
+    # Override the correct synchronization function
+    def device_synchronize(self):
+        torch.cuda.synchronize()
+        return True
+
+    # Configure distribution-related parameters, such as master_addr, master_port, etc.
+    # Set the corresponding backend
+    def initialize_ccl(self, rank, world_size):
+        """
+        initialize distributed process groups and relevant ENVs
+        """
+
+        # set cuda device
+        torch.cuda.set_device(rank)
+
+        # set envs
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = "49373"
+        os.environ["LOCAL_RANK"] = str(rank)
+        os.environ["RANK"] = str(rank)
+        os.environ["WORLD_SIZE"] = str(world_size)
+
+        # Call the init process
+        torch.distributed.init_process_group(
+            backend="nccl",
+            world_size=world_size,
+            rank=rank
+        )
+
+        # create group
+        self.setup_2d_group()
+
+        log.info(f"DIST: rank {rank}, world_size {world_size}")
+        return True
+
+    # Create 2D group
+    def setup_2d_group(self):
+        # get rank and set device
+        self.rank = dist.get_rank()
+        torch.cuda.set_device(self.rank)
+
+        origin_store_based_barrier = dist_c10d._store_based_barrier
+        dist_c10d._store_based_barrier = lambda *a, **kw: None
+
+        self.world_size = dist.get_world_size()
+        self.ranks = range(0, self.world_size)
+        group = dist.new_group(self.ranks)
+        if self.rank in self.ranks:
+            self.group = group
+
+        dist_c10d._store_based_barrier = origin_store_based_barrier
+
+        # wait for all ranks finish group initializing
+        torch.distributed.barrier()
+
+    # Destroy all the process group
+    def destroy_process_group(self):
+        dist.destroy_process_group()
+```
+
+## Workload description
+
+```json title=softmax.json
+{
+    "operator": "softmax", #operator name
+    "iterations": 100, #iteration counts
+    "input_shape_list": [
+        [
+            131072,
+            64
+        ],
+        [
+            131072,
+            1024
+        ]
+    ], #Operator input shape, multiple different shapes can be evaluated at the same time, be careful not to exceed the memory capacity and cause OOM
+    "dtype": [
+        "float32",
+        "bfloat16",
+        "half"
+    ] #Data type, you can fill in the data type supported by the hardware
+}
+```
+
+## Evaluation Metrics Description
+
+- Memory Size(MB): The amount of access to operator input
+- Group: The number of groups that the communication operator is divided into
+- Bus bandwidth(GB/s): Communication bandwidth for communication operators, None for computation operators
+- Algo bandwidth(GB/s): Operator's IO bandwidth
+- Bandwidth Utilization(%): Memory bandwidth utilization of operators
+- Avg latency(us): Average delay time of N cycles
