@@ -357,6 +357,6 @@ python3 ./bench_model.py --hardware_type GPU --model_config ./model_zoo/mixtral-
 
 输出会放在 `./reports/{hardware_type}/{model_config}/bench_model`:
 - **config.json**: 测试配置。
-- **context_perf.csv**: prefill阶段, 包含指定{batch_size, seq_len}对应的推理延迟。
-- **decode_perf.csv**: decode阶段, 包含指定{batch_size, seq_len}对应的推理延迟。
+- **context_perf.csv**: prefill阶段, 包含指定batch_size, seq_len对应的推理延迟。
+- **decode_perf.csv**: decode阶段, 包含指定batch_size, seq_len对应的推理延迟。
 - **output.txt**: 纯模型性能数据。
