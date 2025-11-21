@@ -1,3 +1,28 @@
+---
+title: "天数智芯测评技术报告"
+date: 2025-11-21
+weight: 2
+keywords: ["ByteMLPerf", "GPGPU"]
+---
+
+import image1 from '../../public/blog/ts/image1.png';
+import image2 from '../../public/blog/ts/image2.png';
+import image3 from '../../public/blog/ts/image3.png';
+import image4 from '../../public/blog/ts/image4.png';
+import image5 from '../../public/blog/ts/image5.png';
+import image6 from '../../public/blog/ts/image6.png';
+import image7 from '../../public/blog/ts/image7.png';
+import image8 from '../../public/blog/ts/image8.png';
+import image9 from '../../public/blog/ts/image9.png';
+import image10 from '../../public/blog/ts/image10.png';
+import image11 from '../../public/blog/ts/image11.png';
+import image12 from '../../public/blog/ts/image12.png';
+import image13 from '../../public/blog/ts/image13.png';
+import image14 from '../../public/blog/ts/image14.png';
+
+
+
+
 # 天数智芯测评技术报告
 
 **构建开源AI硬件评测工具， ByteMLperf-v1.0 X 天数智芯，扬长避短是关键**
@@ -7,9 +32,9 @@
 
 计算机系统评估与性能分析旨在运用测量、模拟等手段及工具，获取计算机执行任务时的性能特征，识别性能瓶颈，从而达成计算机系统的评估。本博客计划依据此方法论对一款天数智芯GPGPU芯片（以下简称“天数芯片”）开展系统评测，通过分阶段测试芯片在指令、算子、模型等多个维度的性能表现，助力读者更深入地了解该芯片的架构、性能表现及使用方法，探寻更为高效的架构与使用方式。 
 
-<figure>
-  <img src="images/ts/image1.png">
-</figure>
+
+<img src={image1}></img>
+
 
 本博客将对硬件能力与软件优化这两大方向展开系统化评估。硬件能力层面涵盖单芯片硬件架构（如计算架构、存储层次架构、片内互连架构等）以及多芯片互联架构（包括硬件组件间的通信拓扑、通信接口、通信协议等）。软件优化层面包含图优化、算子优化、指令编译优化等多维度的优化手段。整体评估性能指标包括指令吞吐与延迟、访存吞吐与延迟、算子效率以及集合通信吞吐与延迟等，旨在量化硬件在不同计算和通信任务中的表现。
 
@@ -29,31 +54,27 @@
 
 从内存层次架构看， 天数芯片有64GB 外部显存，16MB L2 cache，192KB L1 cache/shared memory。在 A800 对应的架构中，每个NV SM独享一个192KB L1存储。**天数的优势是4个SM 共享一个L1， 进行数据共享，减少对L2的带宽需求，进而降低布线需求**。
 
-<div style="display: flex; justify-content: space-between; gap: 1px;">
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image2.png" width="100%">
-    <figcaption>天数芯片硬件架构</figcaption>
-  </figure>
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image3.png" width="100%">
-    <figcaption>英伟达A800芯片硬件架构 【参考白皮书】</figcaption>
-  </figure>
-</div>
+<figure>
+  <img src={image2}"></img>
+  <figcaption>天数芯片硬件架构</figcaption>
+</figure>
+<figure>
+  <img src={image3}"></img>
+  <figcaption>英伟达A800芯片硬件架构 【参考白皮书】</figcaption>
+</figure>
 
 
 ### 2.3 单SM硬件架构分析与对比
 下图左图展示了天数芯片单个流式多处理器（SM）的硬件架构，右图呈现了英伟达A800 GPU的SM硬件架构。二者的相同点在于，这两款芯片的SM中张量核心（兼容Tensor Core）与矢量核心（兼容cuda core包含特殊函数单元，SFU）是分离的，可并行执行任务，且能实现数据共享，这对挖掘数据复用性十分有益。
 
-<div style="display: flex; justify-content: space-between; gap: 1px;">
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image4.png" width="100%">
-    <figcaption>天数智芯单个SM的硬件架构</figcaption>
-  </figure>
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image5.png" width="100%">
-    <figcaption>英伟达A800单个SM的硬件架构【参考白皮书】</figcaption>
-  </figure>
-</div>
+<figure>
+  <img src={image4}"></img>
+  <figcaption>天数智芯单个SM的硬件架构</figcaption>
+</figure>
+<figure>
+  <img src={image5}"></img>
+  <figcaption>英伟达A800单个SM的硬件架构【参考白皮书】</figcaption>
+</figure>
 
 
 两款芯片的差异体现在细微之处。A800每个SM包含4个张量核心，每个张量核心每个时钟周期可实现256次半精度浮点（FP16）融合乘加（FMA）运算，因此每个SM可实现1024次稠密FMA运算。而天数智芯的一个SM配备8个张量核心，每个张量核心每个时钟周期可实现64次FP16 FMA运算，故每个SM可实现512次稠密FMA运算。同时，考虑到无需支持科学计算应用，且专注于大语言模型，天数智芯的芯片去掉了对双精度浮点（FP64）的支持。
@@ -77,7 +98,7 @@
 下图展示了天数GPU的软件栈架构，可以兼容绝大多数cuda生态，其区别主要是为了达到更高硬件效率而设计的特殊指令，如类似cp.async的shared memory engine指令，以及高效率的tensor core指令等。
 
 <figure>
-  <img src="images/ts/image6.png">
+  <img src={image6}></img>
 </figure>
 
 ### 3.2 会用才是关键
@@ -86,7 +107,7 @@
 例如在进行FA算子调优时，先在算法层面做好分块策略以及数据复用之类的工作，再通过分析指令流以评估编译器是否有调优空间，最后通过实测以及硬件仿真得出实际的性能。而仿真波形可以帮助分析硬件Matrix、Vector以及LSU单元的效率，这个结果可以反馈给算子或编译器，通过继续调优以提高硬件各功能单元的效率，将硬件性能压榨到极致。而在A800上调优算子的过程中，由于缺乏硬件RTL仿真环境，无法利用仿真波形来指导算子和编译器，所以想要达到如天数芯片这样清楚每一处细节，是完全做不到的。在天数芯片上极致调优kernel流程如下图所示，MFU使用case QKV BF16, batch=8, head_num=8, seqlen=1024, head_dim=128, causal=false 测得。
 
 <figure>
-  <img src="images/ts/image7.png">
+  <img src={image7}></img>
 </figure>
 
 | **FA优化方案**                                       | **MFU(%)** | **FA当前方案瓶颈分析**                                      |
@@ -232,7 +253,7 @@ A800 FA测试使用的是目前最常用的Dao-AILab开源flash-attention实现�
 
 
 <figure>
-  <img src="images/ts/image8.png">
+  <img src={image8}></img>
 </figure>
 
 如上图所示，从QKV BF16 的性能测试结果来看，无论在短seqlen还是长seqlen上，天数芯片相较A800都表现出更高的MFU，这展现出了天数GPGPU极高的FA效率，充分体现了天数GPGPU架构的高效性。
@@ -254,7 +275,7 @@ A800 FA测试使用的是目前最常用的Dao-AILab开源flash-attention实现�
 了进一步研究FA算子的效率，下面给出天数芯片的**FA** **极致优化的流水图**。如下图所示，可以看出流水线排布非常紧凑，资源空闲非常低，因此其FA算子效率较高。
 
 <figure>
-  <img src="images/ts/image9.png">
+  <img src={image9}></img>
 </figure>
 
 
@@ -263,7 +284,7 @@ A800 FA测试使用的是目前最常用的Dao-AILab开源flash-attention实现�
 ### 4.1 单机拓扑
 
 <figure>
-  <img src="images/ts/image10.png">
+  <img src={image10}></img>
 </figure>
 
 上图为天数芯片的16卡互联拓扑图。每两张卡之间通过一个PCIe 4.0 Switch连接，每4张卡之间通过一个PCIe 4.0 Switch连接，两个PCIe Switch连接到两个CPU上。对于All-Gather调用，执行Ring算法，经过15次环形传输，每个GPU上都有了完整的副本。对于All-Reduce调用，则使用Reduce-Scatter + All-Gather算法，执行两遍Ring算法，每一遍算法同样迭代15次。
@@ -300,14 +321,12 @@ All-Gather 的算法与 All-Reduce 类似，区别在于不需要 Reduce。在16
 ### 4.4 通算融合
 天数针对大模型（LLM）中常见的GEMM + All Reduce流程进行了通算融合优化。得益于高度灵活的兼容CUDA架构，用户能够轻松进行计算/通信的细粒度控制，从而提高芯片的利用率。
 
-<div style="display: flex; justify-content: space-between; gap: 1px;">
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image11.png" width="100%">
-  </figure>
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image12.png" width="100%">
-  </figure>
-</div>
+<figure>
+  <img src={image11}"></img>
+</figure>
+<figure>
+  <img src={image12}"></img>
+</figure>
 
 如上图所示，经过优化，计算和通讯阶段都被拆成了多份，因此不需要等到所有计算完成再开始通讯。经过合理的调度，通讯时间几乎完全隐藏在了GEMM和Reduce计算过程中，这使得天数芯片能够充分利用有限的互联带宽达到极高的Prefill效率。
 
@@ -413,12 +432,11 @@ seq_len * dmodel * size_bfloat16 = 4096 * 7168 * 2 = 56MByte
 
 ### 算力 v.s. 片上存储
 
-<div style="display: flex; justify-content: space-between; gap: 1px;">
-  <figure style="flex: 1; text-align: center;">
-    <img src="images/ts/image13.png" width="100%">
-    <figcaption>经典GPU 存储层级</figcaption>
-  </figure>
-</div>
+<figure>
+  <img src={image13}"></img>
+  <figcaption>经典GPU 存储层级</figcaption>
+</figure>
+
 
 在有限的布线资源下如何实现L2-L1高带宽以满足快速膨胀的算力的需求是现代GPGPU设计的核心挑战。天数芯片的一个架构亮点就是四个SM共用一个L1，从而极大地降低了L2-L1的带宽压力，进而降低了布线压力。NVIDIA在H和B系列GPU里不断通过DSM技术来降低L2带宽压力。
 
@@ -439,7 +457,7 @@ ByteMLperf 作为芯片架构与实际应用之间的桥梁，通过设计一套
 极致的优化需要更大的视角去看应用、软件、系统架构和芯片。 以下图视角而言，过去20年，以device优化为主导的摩尔定律，引领了半导体的繁荣。 设计与制程的协同优化Design-technology-cooptimization (DTCO) 进一步优化了布局布线以及实现了更小的标准单元（standard cell size)。 Chiplet技术进一步把封装技术带到芯片设计流程以应对更高存储带宽的需求。 每一次优化路径都是更靠近上层应用，需要多层级协同优化。Sysytem co-optimization (STCO)的极限端到端优化，更是需要考虑软件和上层应用。 **ByteMLperf**的提出将会成为STCO的重工具，通过与芯片厂商的合作探索，实现极限的芯片性能，并为下一代芯片架构设计提供充分的数据支持和优化建议。
 
 <figure>
-  <img src="images/ts/image14.png">
+  <img src={image14}></img>
   <figcaption>系统协同优化的大视角 [图片来源，英特尔75周年的摩尔定律，https://download.intel.com/newsroom/2022/new-technologies/ann-kelleher-iedm-2022.pdf]</figcaption>
 </figure>
 
