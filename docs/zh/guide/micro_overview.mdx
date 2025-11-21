@@ -9,9 +9,9 @@ ByteMLPerf Micro Perf Vendor 架构如下图所示：
 
 <img src={micro_framework} alt="micro_framework"></img>
 
-## User Interface
+## 用户入口
 
-用户使用入口为`launch.py`, 在使用 byte mlperf 评估时，只需传入--task 、--hardware_type 两个参数，如下所示：
+用户使用入口为`launch.py`, 在使用 byte mlperf 评估时，一般需要传入--task 、--hardware_type 两个参数，如下所示：
 
 ```bash
 python3 launch.py --task xxx --hardware_type xxx
@@ -19,44 +19,78 @@ python3 launch.py --task xxx --hardware_type xxx
 
 1. task
 
-`--task` 参数为待评测算子的 workload 名字，无默认值，必须用户指定。例如：若要评估 Add 算子的 workload，则需指定`--task add`。
+`--task` 参数为待评测算子的 workload 名字，默认值为指定所有任务。例如：若要评估 Add 算子的 workload，则需指定`--task add`。
 
-注：所有 workload 定义在 byte_microperf/workloads 下，传参时名字需要和文件名对齐。目前格式为 kernel_name.
+注：所有 workload 定义在 byte_microperf/workloads 下，传参时名字需要和文件名对齐。目前格式为 kernel_name。
+也可以自己实现 workload，需要传递`--task_dir`参数。
 
 2. hardware_type
 
-`--hardware_type` 参数为传入的 hardware_type 名字，无默认值，必须用户指定。例如：若要评估 GPU，则需指定`--hardware_type GPU`。
+`--hardware_type` 参数为传入的 hardware_type 名字，默认值为GPU。例如：若要评估 GPU，则需指定`--hardware_type GPU`。
 
 注：所有 hardware type 定义在 byte_microperf/backends 下，传参时名字需要和 folder 名对齐。
 
 3. vendor_path
 
-`--vendor_path` 参数为传入的新硬件配置文件路径，无默认值，必须用户指定。例如：若要评估 GPU，则需指定`--hardware_type ../vendor_zoo/NVIDIA/A100-PCIe.json`。
+`--vendor_path` 参数为传入的新硬件配置文件路径，无默认值。例如：若要评估 GPU，则需指定`--vendor_path ../vendor_zoo/NVIDIA/A100-PCIe.json`。
 
 注：若未提供指定格式的配置文件，则需要在 backends/backend_xpu.py 内传入硬件相关的参数。
 
+4. task_dir
+
+`--task_dir` 参数传入的 workload 路径，默认值为 `byte_micro_perf/workloads`。例如：若要指定自己的 workload，则需指定`--task_dir {your/path/to/workload}`
+
+注：自己的 workload 路径下需实现与 `byte_micro_perf/workloads` 路径下相同的json格式文件。
+
 ## 评估类别
 
-四类评估：GEMM、Vector、通信、Kernel Launch。
+两类评估：计算，通信。
 
-### GEMM
+### 计算
+
+#### GEMM
 
 引入目的: 评估新硬件的峰值算子，以及按如下配置评估该算子在不同输入形状的条件能达到多高的峰值计算能力。
 关键配置 [M, K, N]，这里又可以分为 8 类，如下图：
 
 <img src={micro_gemm} alt="micro_gemm"></img>
 
-按照极小、均衡、极大选取三个数字。全部评测集为 M K N 组合排列，
-M：[64, 2048, 65536]
-K：[64, 2048, 65536]
-N：[64, 2048, 65536]
-[M, K] x [K, N] -> [M, N]: 2MNK 次浮点运算
+按照极小、均衡、极大选取三个数字。全部评测集为 M，KN 组合排列:<br/>
+M：[4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]<br/>
+KN：[[1024, 1024], [16384, 1024], [16384, 32], [32, 16384], [1024, 16384], [4096, 4096], [8192, 8192], [12288, 12288]]<br/>
 
-### Vector
+#### Batch-GEMM
 
-#### Add
+引入目的: 同GEMM。
+关键配置 [batch_size, M, K, N]
+
+全部评测集为 batch_size，M，KN 组合排列:<br/>
+batch_size：[8, 12, 16, 20, 24, 28, 32]<br/>
+M：[4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]<br/>
+KN：[[1024, 1024], [4096, 4096], [8192, 8192], [16384, 32], [32, 16384], [16384, 1024], [1024, 16384]]<br/>
+
+#### Group-GEMM
+
+引入目的: 同GEMM。
+关键配置 [group, batch_size, M, K, N]
+
+Group-GEMM 按照 8 个为一组进行计算，其中每个组的 M = batch * group_id。全部评测集为 group，batch_size，M，KN 组合排列:<br/>
+
+gemm_group：[1, 2, 3, 4, 5, 6, 7, 8]<br/>
+batch_size：[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]<br/>
+KN：[[32, 16384], [16384, 32], [16384, 16384]]<br/>
+
+#### GEMV
+
+引入目的: 评估 GEMV 在不同输入形状的条件能达到多高的峰值计算能力。
+
+#### Add/Sub/Mul/Div
 
 引入目的: 如果操作数在 global memory 上，element-wise 的操作，基本上是在评估 global memory 的读带宽，因为需要的计算少，IO 多。
+
+#### ReduceMax/ReduceMin/ReduceSum
+
+引入目的: 
 
 #### Softmax
 
@@ -72,28 +106,66 @@ self[:, index[i], :] += alpha * src[:, i, :]  # if dim == 1
 self[:, :, index[i]] += alpha * src[:, :, i]  # if dim == 2
 ```
 
-引入目的: Index 相关的操作预估在新硬件上特别耗时
+引入目的: Index 相关的操作预估在新硬件上特别耗时。
 
-#### Special Function
+#### 特殊函数
 
-- Exp/Sin/Cos: 评估新硬件在特殊函数上的性能，是否有特殊函数单元的硬件加速。
+Exp/Sin/Cos: 评估新硬件在特殊函数上的性能，是否有特殊函数单元的硬件加速。
 
-#### Random Function
+#### 随机函数
 
-- Exponential\_: 引入目的: 评估随机函数的生成速度，是否有硬件上的相关算法加速
+Exponential: 引入目的: 评估随机函数的生成速度，是否有硬件上的相关算法加速。
+
+#### Cast
+
+引入目的: 评估 Cast 在不同输入形状的条件能达到多高的峰值计算能力。
+
+#### Layernorm
+
+引入目的: 评估 LayerNorm 在不同输入形状的条件能达到多高的峰值计算能力。
+
+#### 激活函数
+
+Gelu/Silu/Swiglu: 引入目的: 评估激活函数的性能，是否有硬件上的相关算法加速。
+
+#### Unique
+
+引入目的: 评估 Unique 在不同输入形状的条件能达到多高的峰值计算能力。
 
 ### 通信
 
+#### AllGather
+
+引入目的: 
+
+#### Gather
+
+引入目的: 
+
 #### AllReduce
+
+引入目的: 
 
 #### ReduceScatter
 
-#### AllGather
+引入目的: 
+
+#### Scatter
+
+引入目的: 
 
 #### Broadcast
 
+引入目的: 
+
 #### All2All
+
+引入目的: 
 
 #### H2D/D2H
 
-### P2P(send & receive)
+引入目的: 
+
+#### P2P(send & receive)
+
+引入目的: 

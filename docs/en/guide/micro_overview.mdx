@@ -1,1 +1,171 @@
+import micro_framework from '../../public/guide/micro_framework.png';
+import micro_gemm from '../../public/guide/micro_gemm.png';
+
 # ByteMLPerf Micro Perf Overview
+
+## Framework
+
+ByteMLPerf Micro Perf Vendor framwork:
+
+<img src={micro_framework} alt="micro_framework"></img>
+
+## User Interface
+
+The user interface is `launch.py`, when using ByteMLPerf's micro perf, we usually need to pass in --task 、--hardware_type two arguments:
+
+```bash
+python3 launch.py --task xxx --hardware_type xxx
+```
+
+1. task
+
+`--task` parameter is the workload name of the operator to be evaluated. The default value specifies all tasks. For example, to evaluate the workload of the Add operator, you need to specify `--task add`.
+
+Note: All workloads are defined under byte_microperf/workloads. When passing parameters, the name needs to be aligned with the file name. The current format is kernel_name.
+You can also implement your own workload, and you need to pass the `--task_dir` parameter.
+
+2. hardware_type
+
+`--hardware_type` parameter is the passed hardware_type name, and the default value is GPU. For example, if you want to evaluate GPU, you need to specify `--hardware_type GPU`.
+
+Note: All hardware types are defined under byte_microperf/backends. When passing parameters, the name needs to be aligned with the folder name.
+
+3. vendor_path
+
+`--vendor_path` parameter is the new hardware configuration file path passed in, with no default value. For example: if you want to evaluate the GPU, you need to specify `--vendor_path ../vendor_zoo/NVIDIA/A100-PCIe.json`.
+
+Note: If a configuration file in the specified format is not provided, hardware-related parameters need to be passed into backends/backend_xpu.py.
+
+4. task_dir
+
+`--task_dir` parameter is the self-defined workload path. The default value is `byte_micro_perf/workloads`. For example, if you want to specify your own workload, you need to specify `--task_dir {your/path/to/workload}`
+
+Note: Your workload path needs to implement the same json format file as the one in the `byte_micro_perf/workloads` path.
+
+## Assessment Category
+
+Two types of assessment: computation, communication.
+
+### Computation
+
+#### GEMM
+
+Purpose of introduction: To evaluate the peak operator of the new hardware, and to evaluate how high the peak computing power of the operator can be achieved under different input shapes according to the following configuration.
+The key configuration: [M, K, N] can be divided into 8 categories, as shown below:
+
+<img src={micro_gemm} alt="micro_gemm"></img>
+
+Select three numbers according to minimum, balance and maximum. All evaluation sets are arranged in M, KN combinations:<br/>
+M:[4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]<br/>
+KN:[[1024, 1024], [16384, 1024], [16384, 32], [32, 16384], [1024, 16384], [4096, 4096], [8192, 8192], [12288, 12288]]<br/>
+
+#### Batch-GEMM
+
+Purpose of introduction: Same as GEMM.
+The key configuration: [batch_size, M, K, N]
+
+All evaluation sets are batch_size, M, KN combinations:<br/>
+batch_size:[8, 12, 16, 20, 24, 28, 32]<br/>
+M:[4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]<br/>
+KN:[[1024, 1024], [4096, 4096], [8192, 8192], [16384, 32], [32, 16384], [16384, 1024], [1024, 16384]]<br/>
+
+#### Group-GEMM
+
+Purpose of introduction: Same as GEMM.
+The key configuration: [group, batch_size, M, K, N]:
+
+Group-GEMM is calculated in groups of 8, where M = batch * group_id for each group. All evaluation sets are group, batch_size, M, KN combinations:<br/>
+
+gemm_group:[1, 2, 3, 4, 5, 6, 7, 8]<br/>
+batch_size:[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]<br/>
+KN:[[32, 16384], [16384, 32], [16384, 16384]]<br/>
+
+#### GEMV
+
+Purpose of introduction: To evaluate how high the peak computational capacity of GEMV can be achieved under conditions of different input shapes.
+
+#### Add/Sub/Mul/Div
+
+Purpose of introduction: If the operands are in global memory, element-wise operations are basically evaluating the read bandwidth of global memory, because less calculations are required and more IO is performed.
+
+#### ReduceMax/ReduceMin/ReduceSum
+
+Purpose of introduction: 
+
+#### Softmax
+
+Purpose of introduction: softmax can evaluate vector computing power in a slightly more balanced way, which is limited by IO or computing under different input shapes.
+
+#### IndexAdd
+
+Formula:
+
+```python
+self[index[i], :, :] += alpha * src[i, :, :]  # if dim == 0
+self[:, index[i], :] += alpha * src[:, i, :]  # if dim == 1
+self[:, :, index[i]] += alpha * src[:, :, i]  # if dim == 2
+```
+
+Purpose of introduction: Index-related operations are estimated to be particularly time-consuming on new hardware.
+
+#### Special Functions
+
+Exp/Sin/Cos: Evaluate the performance of new hardware on special functions and whether there is hardware acceleration of special function units.
+
+#### Random Functions
+
+Exponential: Evaluate the generation speed of random functions and whether there is any hardware-based algorithm acceleration.
+
+#### Cast
+
+Purpose of introduction: Evaluate how high the peak computational power of Cast can be achieved under conditions of different input shapes.
+
+#### Layernorm
+
+Purpose of introduction: Evaluate how high the peak computational power of Layernorm can be achieved under conditions of different input shapes.
+
+#### Activation Functions
+
+Gelu/Silu/Swiglu: Evaluate the performance of the activation function and whether there is any hardware-based algorithm acceleration.
+
+#### Unique
+
+Purpose of introduction: Evaluate how high the peak computational power of Unique can be achieved under conditions of different input shapes.
+
+### Communication
+
+#### AllGather
+
+Purpose of introduction: 
+
+#### Gather
+
+Purpose of introduction: 
+
+#### AllReduce
+
+Purpose of introduction: 
+
+#### ReduceScatter
+
+Purpose of introduction: 
+
+#### Scatter
+
+Purpose of introduction: 
+
+#### Broadcast
+
+Purpose of introduction: 
+
+#### All2All
+
+Purpose of introduction: 
+
+#### H2D/D2H
+
+Purpose of introduction: 
+
+#### P2P(send & receive)
+
+Purpose of introduction: 
